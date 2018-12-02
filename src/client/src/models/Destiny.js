@@ -3,13 +3,13 @@ import select from '../api/ManifestApi';
 
 export default {
   state: {
-    ghostShellIcons: []
+    ghostShells: []
   },
   reducers: {
-    addGhostShellIcons(state, ghostShellIcons) {
+    addGhostShells(state, ghostShells) {
       return {
         ...state,
-        ghostShellIcons
+        ghostShells
       };
     }
   },
@@ -46,10 +46,13 @@ export default {
           ghostShellHashes.join()
         );
 
-        const ghostShellIcons = itemDefinitions.map(itemDefinition => {
-          return `https://www.bungie.net${itemDefinition.displayProperties.icon}`;
+        const ghostShells = itemDefinitions.map(itemDefinition => {
+          return {
+            name: itemDefinition.displayProperties.name,
+            icon: `https://www.bungie.net${itemDefinition.displayProperties.icon}`
+          };
         });
-        dispatch.destiny.addGhostShellIcons(ghostShellIcons);
+        dispatch.destiny.addGhostShells(ghostShells);
       });
     }
   })
