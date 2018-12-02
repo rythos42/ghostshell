@@ -1,9 +1,8 @@
 Now that I can display icons...
 
 - find Vault shells
-- find perks for each ghost
 - show perks
-- show names
+- categorize perks
 - buttons to sort perks
     Crucible
     Strikes
@@ -18,6 +17,9 @@ Now that I can display icons...
         Hellas Basin
     Uncategorized
 - get ghosts for different characters on account
+- be able to equip and show which one is currently equipped
+- getOAuthToken is no longer correctly named and is huge and needs refactoring badly
+
 UI
     - make Sign in button pretty
     - allow table to expand to a certain degree

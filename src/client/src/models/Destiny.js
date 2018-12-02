@@ -16,10 +16,6 @@ export default {
   effects: dispatch => ({
     async getOAuthToken(code) {
       const oAuthToken = await DestinyApi.getOAuthToken(code);
-
-      dispatch.destiny.getMemberships(oAuthToken);
-    },
-    async getMemberships(oAuthToken) {
       const membershipInfo = await DestinyApi.getMembershipInfo(oAuthToken);
       const memberships = membershipInfo.destinyMemberships;
 
@@ -30,28 +26,52 @@ export default {
           accessToken: oAuthToken.accessToken
         });
 
-        const ghostShellHashes = [];
+        const ghostShellData = [];
         for (let characterId in characters) {
           if (!characters.hasOwnProperty(characterId)) continue;
 
           const character = characters[characterId];
           for (let itemIndex = 0; itemIndex < character.items.length; itemIndex++) {
             const item = character.items[itemIndex];
-            if (item.bucketHash === 4023194814) ghostShellHashes.push(item.itemHash);
+            if (item.bucketHash === 4023194814) {
+              ghostShellData.push({
+                itemHash: item.itemHash,
+                itemInstanceId: item.itemInstanceId
+              });
+            }
           }
         }
 
-        const itemDefinitions = await select(
-          'DestinyInventoryItemDefinition',
-          ghostShellHashes.join()
-        );
+        const ghostShells = await Promise.all(
+          ghostShellData.map(async ghostShell => {
+            const itemDefinition = await select(
+              'DestinyInventoryItemDefinition',
+              ghostShell.itemHash
+            );
 
-        const ghostShells = itemDefinitions.map(itemDefinition => {
-          return {
-            name: itemDefinition.displayProperties.name,
-            icon: `https://www.bungie.net${itemDefinition.displayProperties.icon}`
-          };
-        });
+            const itemPerkIds = await DestinyApi.getItemPerks({
+              membershipId: membership.membershipId,
+              membershipType: membership.membershipType,
+              accessToken: oAuthToken.accessToken,
+              itemInstanceId: ghostShell.itemInstanceId
+            });
+
+            const itemPerks = await select(
+              'DestinySandboxPerkDefinition',
+              itemPerkIds.map(itemPerkId => itemPerkId.perkHash).join()
+            );
+
+            return {
+              itemInstanceId: ghostShell.itemInstanceId,
+              name: itemDefinition[0].displayProperties.name,
+              icon: `https://www.bungie.net${itemDefinition[0].displayProperties.icon}`,
+              perks: itemPerks.map(itemPerk => ({
+                name: itemPerk.displayProperties.name,
+                hash: itemPerk.hash
+              }))
+            };
+          })
+        );
         dispatch.destiny.addGhostShells(ghostShells);
       });
     }

@@ -2,6 +2,11 @@
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json');
 
+if(!$_GET['hash']) {
+    echo '[]';
+    return;
+}
+
 include_once('vendor\pclzip\pclzip\pclzip.lib.php');
 
 $apiKey = '9d9691432cae49ee93f57e459d4219b8';

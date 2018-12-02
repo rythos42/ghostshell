@@ -50,3 +50,14 @@ export async function getCharacterInventories({ membershipId, membershipType, ac
 
   return response.data.Response.characterInventories.data;
 }
+
+export async function getItemPerks({ membershipId, membershipType, itemInstanceId, accessToken }) {
+  const components = 'ItemPerks';
+  const response = await get(
+    `/Destiny2/${membershipType}/Profile/${membershipId}/Item/${itemInstanceId}/?components=${components}`,
+    accessToken
+  );
+
+  const perkData = response.data.Response.perks.data;
+  return (perkData && perkData.perks) || [];
+}
