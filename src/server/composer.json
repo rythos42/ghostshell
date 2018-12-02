@@ -1,0 +1,12 @@
+{
+    "name": "craig/server",
+    "require": {
+        "pclzip/pclzip": "^2.8"
+    },
+    "authors": [
+        {
+            "name": "Craig Fleming",
+            "email": "rythos42@gmail.com"
+        }
+    ]
+}
