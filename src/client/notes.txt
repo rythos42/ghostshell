@@ -1,25 +1,16 @@
-Now that I can display icons...
-
-- find Vault shells
-- show perks
-- categorize perks
-- buttons to sort perks
-    Crucible
-    Strikes
-    Gambit
-    Public Events
-    Open World
-        EDZ
-        Mercury
-        Dreaming City
-        Nessus
-        Tangled Shore
-        Hellas Basin
-    Uncategorized
+- why only 2 perks on Bursting Wisdom Shell in app? There are actually 3...
+- buttons to sort Ghosts by perks
 - get ghosts for different characters on account
-- be able to equip and show which one is currently equipped
 - getOAuthToken is no longer correctly named and is huge and needs refactoring badly
+- find Vault shells
 
 UI
     - make Sign in button pretty
     - allow table to expand to a certain degree
+
+
+Future
+- be able to equip and show which one is currently equipped
+- get rid of the spaces at the front of GhostModTypes::GhostModTypeMappings and do a proper regex
+- better ACAO
+- see about removing "select" action on Service -- it's too wide, even though it's not secret information

@@ -1,5 +1,5 @@
 import * as DestinyApi from '../api/DestinyApi';
-import select from '../api/ManifestApi';
+import { select, categorizePerk } from '../api/ManifestApi';
 
 export default {
   state: {
@@ -56,19 +56,17 @@ export default {
               itemInstanceId: ghostShell.itemInstanceId
             });
 
-            const itemPerks = await select(
-              'DestinySandboxPerkDefinition',
-              itemPerkIds.map(itemPerkId => itemPerkId.perkHash).join()
+            const perks = await Promise.all(
+              itemPerkIds.map(async itemPerkId => {
+                return await categorizePerk(itemPerkId.perkHash);
+              })
             );
 
             return {
               itemInstanceId: ghostShell.itemInstanceId,
               name: itemDefinition[0].displayProperties.name,
               icon: `https://www.bungie.net${itemDefinition[0].displayProperties.icon}`,
-              perks: itemPerks.map(itemPerk => ({
-                name: itemPerk.displayProperties.name,
-                hash: itemPerk.hash
-              }))
+              perks: perks
             };
           })
         );

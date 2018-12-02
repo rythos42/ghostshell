@@ -12,7 +12,7 @@ class ShellGrid extends React.Component {
         <strong>{ghostShell.name}</strong>
         <ul>
           {ghostShell.perks.map(perk => (
-            <li key={perk.hash}>{perk.name}</li>
+            <li key={perk.perkHash}>{perk.name}</li>
           ))}
         </ul>
       </div>
