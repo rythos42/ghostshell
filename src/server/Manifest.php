@@ -10,13 +10,24 @@ $manifestUrl = getManifestUrl($apiKey);
 $manifestDb = getManifestDatabase($manifestUrl, $apiKey);
 
 $table = $_GET['t'];
-$hash = $_GET['hash'];
+$hashesArray = explode(',', $_GET['hash']);
 
-$query = "select * from {$table} where id + 4294967296 = {$hash} OR id = {$hash}";
-$results = $manifestDb->query($query);
-while ($row = $results->fetch(PDO::FETCH_ASSOC)) {
-    echo $row['json'];
+$query = "select * from {$table} where ";
+$prepend = "";
+foreach($hashesArray as $hash) {
+    $query = $query . $prepend . "id + 4294967296 = {$hash} OR id = {$hash}";
+    $prepend = " or ";
 }
+
+$results = $manifestDb->query($query);
+echo '[';
+$outputPrepend = "";
+while ($row = $results->fetch(PDO::FETCH_ASSOC)) {
+    echo $outputPrepend;
+    echo $row['json'];
+    $outputPrepend = ",";
+}
+echo ']';
 
 function getManifestUrl($apiKey) {
     $curl = curl_init();

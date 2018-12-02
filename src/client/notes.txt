@@ -1,8 +1,5 @@
 Now that I can display icons...
--- ran prettier/eslint and now an array isn't an array in Destiny.js
-    - check how if it's an array in Membership?
 
-- change ManifestApi to accept a list of hashes so I don't have to make a billion calls
 - find Vault shells
 - find perks for each ghost
 - show perks

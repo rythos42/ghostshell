@@ -14,7 +14,7 @@ function Verify({ getOAuthToken }) {
 function mapDispatchToProps(dispatch) {
   return {
     getOAuthToken: code => {
-      dispatch.membership.getOAuthToken(code);
+      dispatch.destiny.getOAuthToken(code);
     }
   };
 }
