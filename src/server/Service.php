@@ -26,12 +26,11 @@ switch($action) {
 
         break;
 
-    case 'categorizePerk':
-        // just one for now
-        $perkHash = $_REQUEST['perkHash'];
+    case 'categorizeSockets':
+        $hashesArray = explode(',', $_REQUEST['hash']);
 
         $manifestDb = Manifest::getManifestDatabase($apiKey);
-        $query = Manifest::createSelect('DestinySandboxPerkDefinition', array($perkHash));
+        $query = Manifest::createSelect('DestinyInventoryItemDefinition', $hashesArray);
         $statement = $manifestDb->query($query);
 
         $row = $statement->fetch(PDO::FETCH_ASSOC);
@@ -40,15 +39,23 @@ switch($action) {
             break;
         }
 
-        $rowObject = json_decode($row['json']);
-        $description = $rowObject->displayProperties->description;
+        $sockets = array();
+        do {
+            $rowObject = json_decode($row['json']);
+            if($rowObject->plug->plugCategoryHash !== 1820735122) // ghosts.mods.perks
+                continue;
 
-        $ghost = array(
-            "name" => $rowObject->displayProperties->name,
-            "perkHash" => $rowObject->hash,
-            "ghostModTypes" => GhostModTypes::getGhostModTypesForString($description)
-        );
-        echo json_encode($ghost);
+            $description = $rowObject->displayProperties->description;
+    
+            $ghost = array(
+                "name" => $rowObject->displayProperties->name,
+                "hash" => $rowObject->hash,
+                "ghostModTypes" => GhostModTypes::getGhostModTypesForString($description)
+            );
+            array_push($sockets, $ghost);
+        } while($row = $statement->fetch(PDO::FETCH_ASSOC));
+        
+        echo json_encode($sockets);
 
         break;
 }

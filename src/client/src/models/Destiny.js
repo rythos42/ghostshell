@@ -1,5 +1,5 @@
 import * as DestinyApi from '../api/DestinyApi';
-import { select, categorizePerk } from '../api/ManifestApi';
+import { select, categorizeSockets } from '../api/ManifestApi';
 
 export default {
   state: {
@@ -49,24 +49,23 @@ export default {
               ghostShell.itemHash
             );
 
-            const itemPerkIds = await DestinyApi.getItemPerks({
+            const itemSockets = await DestinyApi.getItemSockets({
               membershipId: membership.membershipId,
               membershipType: membership.membershipType,
               accessToken: oAuthToken.accessToken,
               itemInstanceId: ghostShell.itemInstanceId
             });
 
-            const perks = await Promise.all(
-              itemPerkIds.map(async itemPerkId => {
-                return await categorizePerk(itemPerkId.perkHash);
-              })
+            const socketPlugHashes = itemSockets.map(itemSocket => itemSocket.plugHash);
+            const categorizedSockets = await categorizeSockets(
+              socketPlugHashes.filter(socketPlugHash => socketPlugHash != null)
             );
 
             return {
               itemInstanceId: ghostShell.itemInstanceId,
               name: itemDefinition[0].displayProperties.name,
               icon: `https://www.bungie.net${itemDefinition[0].displayProperties.icon}`,
-              perks: perks
+              sockets: categorizedSockets
             };
           })
         );

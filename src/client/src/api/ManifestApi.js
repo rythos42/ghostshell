@@ -11,8 +11,8 @@ export async function select(table, hash) {
   return response.data;
 }
 
-export async function categorizePerk(perkHash) {
-  const path = `?action=categorizePerk&perkHash=${perkHash}`;
+export async function categorizeSockets(socketPlugHashes) {
+  const path = `?action=categorizeSockets&hash=${socketPlugHashes.join()}`;
   const response = await get(path);
   return response.data;
 }

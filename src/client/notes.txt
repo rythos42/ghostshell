@@ -1,12 +1,19 @@
-- why only 2 perks on Bursting Wisdom Shell in app? There are actually 3...
-- buttons to sort Ghosts by perks
+- buttons to sort Ghosts by sockets
+    - because of the number of socktes, can't do filter buttons like I wanted
+    - drop down for "where" for sure
+    - maybe I can have buttons for "what" still
+    - need a UI that can select multiple things, maybe someone wants a shell that is for Io and Public Events and telemetry??
+        - maybe a drawer?
 - get ghosts for different characters on account
+    - drop down list to select characters
 - getOAuthToken is no longer correctly named and is huge and needs refactoring badly
 - find Vault shells
 
 UI
     - make Sign in button pretty
     - allow table to expand to a certain degree
+    - mobile friendly
+    - make table cells nice
 
 
 Future
