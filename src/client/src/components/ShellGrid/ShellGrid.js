@@ -1,9 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
-
 import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
 import Tooltip from '@material-ui/core/Tooltip';
+
+import modStyles from './ShellGrid.module.css';
 
 class ShellGrid extends React.Component {
   makeTooltip(ghostShell) {
@@ -19,6 +20,17 @@ class ShellGrid extends React.Component {
     );
   }
 
+  isFilteredOut(ghostShell, filteredOutId) {
+    if (filteredOutId === -1) return false;
+
+    for (let i = 0; i < ghostShell.sockets.length; i++) {
+      const socket = ghostShell.sockets[i];
+      if (socket.ghostModTypes.indexOf(filteredOutId) !== -1) return false;
+    }
+
+    return true;
+  }
+
   render() {
     const { ghostShells } = this.props;
 
@@ -27,6 +39,9 @@ class ShellGrid extends React.Component {
         <GridList cellHeight={160}>
           {ghostShells.map(ghostShell => (
             <GridListTile key={ghostShell.itemInstanceId}>
+              {this.isFilteredOut(ghostShell, this.props.filteredOutId) && (
+                <div className={modStyles.overlay} />
+              )}
               <Tooltip title={this.makeTooltip(ghostShell)} aria-label={ghostShell.name}>
                 <img src={ghostShell.icon} alt="Shell" />
               </Tooltip>
@@ -40,7 +55,8 @@ class ShellGrid extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    ghostShells: state.destiny.ghostShells
+    ghostShells: state.destiny.ghostShells,
+    filteredOutId: state.destiny.mutuallyExclusiveWhereFilter
   };
 }
 

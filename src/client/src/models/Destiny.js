@@ -1,9 +1,12 @@
 import * as DestinyApi from '../api/DestinyApi';
-import { select, categorizeSockets } from '../api/ManifestApi';
+import * as ManifestApi from '../api/ManifestApi';
 
 export default {
   state: {
-    ghostShells: []
+    ghostShells: [],
+    mutuallyExclusiveWhereList: [],
+    ghostModTypes: {},
+    mutuallyExclusiveWhereFilter: -1
   },
   reducers: {
     addGhostShells(state, ghostShells) {
@@ -11,10 +14,32 @@ export default {
         ...state,
         ghostShells
       };
+    },
+    setMutuallyExclusiveWhereList(state, mutuallyExclusiveWhereList) {
+      mutuallyExclusiveWhereList = mutuallyExclusiveWhereList.map(where => {
+        return { name: state.ghostModTypes[where], id: where };
+      });
+
+      return {
+        ...state,
+        mutuallyExclusiveWhereList
+      };
+    },
+    setAllGhostModTypes(state, ghostModTypes) {
+      return {
+        ...state,
+        ghostModTypes
+      };
+    },
+    setMutuallyExclusiveWhereFilter(state, whereId) {
+      return {
+        ...state,
+        mutuallyExclusiveWhereFilter: whereId
+      };
     }
   },
   effects: dispatch => ({
-    async getOAuthToken(code) {
+    async getGhostShellsForCurrentUser(code) {
       const oAuthToken = await DestinyApi.getOAuthToken(code);
       const membershipInfo = await DestinyApi.getMembershipInfo(oAuthToken);
       const memberships = membershipInfo.destinyMemberships;
@@ -44,7 +69,7 @@ export default {
 
         const ghostShells = await Promise.all(
           ghostShellData.map(async ghostShell => {
-            const itemDefinition = await select(
+            const itemDefinition = await ManifestApi.select(
               'DestinyInventoryItemDefinition',
               ghostShell.itemHash
             );
@@ -57,7 +82,7 @@ export default {
             });
 
             const socketPlugHashes = itemSockets.map(itemSocket => itemSocket.plugHash);
-            const categorizedSockets = await categorizeSockets(
+            const categorizedSockets = await ManifestApi.categorizeSockets(
               socketPlugHashes.filter(socketPlugHash => socketPlugHash != null)
             );
 
@@ -71,6 +96,14 @@ export default {
         );
         dispatch.destiny.addGhostShells(ghostShells);
       });
+    },
+    async getMutuallyExclusiveWhereList() {
+      const exclusiveWhereList = await ManifestApi.getMutuallyExclusiveWhere();
+      dispatch.destiny.setMutuallyExclusiveWhereList(exclusiveWhereList);
+    },
+    async getAllGhostModTypes() {
+      const ghostModTypes = await ManifestApi.getAllGhostModTypes();
+      dispatch.destiny.setAllGhostModTypes(ghostModTypes);
     }
   })
 };

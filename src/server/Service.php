@@ -58,6 +58,14 @@ switch($action) {
         echo json_encode($sockets);
 
         break;
+
+    case 'enums_getMutuallyExclusiveWhere':
+        echo json_encode(GhostModTypes::getMutuallyExclusiveWhere());
+        break;
+
+    case 'enums_getAllGhostModTypes':
+        echo json_encode(GhostModTypes::getAllGhostModTypes());
+        break;
 }
 
 ?>

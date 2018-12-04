@@ -16,3 +16,15 @@ export async function categorizeSockets(socketPlugHashes) {
   const response = await get(path);
   return response.data;
 }
+
+export async function getMutuallyExclusiveWhere() {
+  const path = '?action=enums_getMutuallyExclusiveWhere';
+  const response = await get(path);
+  return response.data;
+}
+
+export async function getAllGhostModTypes() {
+  const path = '?action=enums_getAllGhostModTypes';
+  const response = await get(path);
+  return response.data;
+}

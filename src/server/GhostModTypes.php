@@ -1,6 +1,7 @@
 <?php
 
 abstract class GhostModTypes {
+    // WHAT
     const Caches = 0;
     const Resources = 1;
     const XP = 2;
@@ -10,27 +11,35 @@ abstract class GhostModTypes {
     const Telemetry = 6;
     const BrightEngram = 7;
     const Exotic = 8;
-    const Io = 9;
-    const HellasBasin = 10;
-    const Mercury = 11;
-    const TangledShore = 12;
-    const DreamingCity = 13;
-    const Titan = 14;
-    const EDZ = 15;
-    const Nessus = 16;
-    const Leviathan = 17;
-    const Gambit = 18;
-    const Crucible = 19;
-    const Strikes = 20;
-    const PublicEvents = 21;
-    const SolarWeapon = 22;
-    const ArcWeapon = 23;
-    const VoidWeapon = 24;
-    const ElementalWeapon = 25;
-    const Generated = 26;
-    const VehicleLessTimeToSummon = 27;
-    const ReloadYourWeapon = 28;
-    const Ride = 29;
+    const VehicleLessTimeToSummon = 9;
+    const ReloadYourWeapon = 10;
+
+    // Mututally Exclusive WHERE
+    const Io = 11;
+    const HellasBasin = 12;
+    const Mercury = 13;
+    const TangledShore = 14;
+    const DreamingCity = 15;
+    const Titan = 16;
+    const EDZ = 17;
+    const Nessus = 18;
+    const Leviathan = 19;
+    const Gambit = 20;
+    const Crucible = 21;
+    const Strikes = 22;
+    private static $ExclusiveWhere = array(GhostModTypes::Io, GhostModTypes::HellasBasin, GhostModTypes::Mercury, GhostModTypes::TangledShore, GhostModTypes::DreamingCity, 
+        GhostModTypes::Titan, GhostModTypes::EDZ, GhostModTypes::Nessus, GhostModTypes::Leviathan, GhostModTypes::Gambit, GhostModTypes::Crucible, GhostModTypes::Strikes);
+
+    // ANYWHERE
+    const PublicEvents = 23;
+    const SolarWeapon = 24;
+    const ArcWeapon = 25;
+    const VoidWeapon = 26;
+    const ElementalWeapon = 27;
+    const Ride = 28;
+
+    // ??
+    const Generated = 29;
 
     private static $GhostModTypeMappings = array(
         " caches" => GhostModTypes::Caches,
@@ -67,7 +76,19 @@ abstract class GhostModTypes {
 
     public static function getAllGhostModTypes() {
         $cls = new ReflectionClass('GhostModTypes');
-        return $cls->getConstants();
+        $constants = $cls->getConstants();
+
+        $constantArray = array();
+        foreach ($constants as $name => $value )
+        {
+            $constantArray[$value] = $name;
+        }
+
+        return $constantArray;
+    }
+
+    public static function getMutuallyExclusiveWhere() {
+        return GhostModTypes::$ExclusiveWhere;
     }
 
     public static function getGhostModTypesForString($description) {

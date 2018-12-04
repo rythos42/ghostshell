@@ -1,23 +1,35 @@
-- buttons to sort Ghosts by sockets
-    - because of the number of socktes, can't do filter buttons like I wanted
-    - drop down for "where" for sure
-    - maybe I can have buttons for "what" still
-    - need a UI that can select multiple things, maybe someone wants a shell that is for Io and Public Events and telemetry??
-        - maybe a drawer?
-- get ghosts for different characters on account
-    - drop down list to select characters
-- getOAuthToken is no longer correctly named and is huge and needs refactoring badly
 - find Vault shells
+- find Warlock shells
+- UI to filter by "what" and "regular where" -- maybe filter buttons as I wanted?
+
+Persistence
+    - don't need to store accesstoken - we aren't using it multiple times
+    - "refresh" will get a new one
+    - should make an icon for users who haven't been before and a different icon for returning users ("refresh")
+    - store whether a user is returning or not in localStorage
 
 UI
+    - disable filters if not signed in
+    - labels on input fields in drawers
     - make Sign in button pretty
     - allow table to expand to a certain degree
     - mobile friendly
     - make table cells nice
+    - overlay should be exactly the size of the icon/border stuff
+
+
+
 
 
 Future
+- getGhostShellsForCurrentUser is huge and needs refactoring badly
 - be able to equip and show which one is currently equipped
 - get rid of the spaces at the front of GhostModTypes::GhostModTypeMappings and do a proper regex
 - better ACAO
 - see about removing "select" action on Service -- it's too wide, even though it's not secret information
+- there's a good chance there's a race condition between getAllGhostModTypes and getMutuallyExclusiveWhereList
+    - likely Saga can fix this
+- getMutuallyExclusiveWhereList called twice
+- "TangledShore" in drop down isn't right
+- standardize on CSS modules, I like them more than withStyles
+- maybe a little UI around the ghost icon with icons that can be hovered over to say where (Vault, Warlock, etc) and tooltips for the sockets and the categories
