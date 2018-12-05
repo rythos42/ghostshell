@@ -40,7 +40,12 @@ export default {
   },
   effects: dispatch => ({
     async getGhostShellsForCurrentUser(code) {
-      const oAuthToken = await DestinyApi.getOAuthToken(code);
+      const config = await dispatch.config.getConfig();
+      const apiKey = config.apiKey;
+      const clientId = config.clientId;
+      const manifestServiceUrl = config.manifestServiceUrl;
+
+      const oAuthToken = await DestinyApi.getOAuthToken({ code, apiKey, clientId });
       const membershipInfo = await DestinyApi.getMembershipInfo(oAuthToken);
       const memberships = membershipInfo.destinyMemberships;
 
@@ -48,7 +53,8 @@ export default {
         const characters = await DestinyApi.getCharacterInventories({
           membershipId: membership.membershipId,
           membershipType: membership.membershipType,
-          accessToken: oAuthToken.accessToken
+          accessToken: oAuthToken.accessToken,
+          apiKey: apiKey
         });
 
         const ghostShellData = [];
@@ -70,6 +76,7 @@ export default {
         const ghostShells = await Promise.all(
           ghostShellData.map(async ghostShell => {
             const itemDefinition = await ManifestApi.select(
+              manifestServiceUrl,
               'DestinyInventoryItemDefinition',
               ghostShell.itemHash
             );
@@ -78,11 +85,13 @@ export default {
               membershipId: membership.membershipId,
               membershipType: membership.membershipType,
               accessToken: oAuthToken.accessToken,
-              itemInstanceId: ghostShell.itemInstanceId
+              itemInstanceId: ghostShell.itemInstanceId,
+              apiKey: apiKey
             });
 
             const socketPlugHashes = itemSockets.map(itemSocket => itemSocket.plugHash);
             const categorizedSockets = await ManifestApi.categorizeSockets(
+              manifestServiceUrl,
               socketPlugHashes.filter(socketPlugHash => socketPlugHash != null)
             );
 
@@ -97,12 +106,12 @@ export default {
         dispatch.destiny.addGhostShells(ghostShells);
       });
     },
-    async getMutuallyExclusiveWhereList() {
-      const exclusiveWhereList = await ManifestApi.getMutuallyExclusiveWhere();
+    async getMutuallyExclusiveWhereList(manifestServiceUrl) {
+      const exclusiveWhereList = await ManifestApi.getMutuallyExclusiveWhere(manifestServiceUrl);
       dispatch.destiny.setMutuallyExclusiveWhereList(exclusiveWhereList);
     },
-    async getAllGhostModTypes() {
-      const ghostModTypes = await ManifestApi.getAllGhostModTypes();
+    async getAllGhostModTypes(manifestServiceUrl) {
+      const ghostModTypes = await ManifestApi.getAllGhostModTypes(manifestServiceUrl);
       dispatch.destiny.setAllGhostModTypes(ghostModTypes);
     }
   })

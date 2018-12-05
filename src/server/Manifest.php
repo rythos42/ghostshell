@@ -1,7 +1,5 @@
 <?php
 
-include_once('vendor\pclzip\pclzip\pclzip.lib.php');
-
 class Manifest {
     private static function getManifestUrl($apiKey) {
         $curl = curl_init();
@@ -18,7 +16,10 @@ class Manifest {
     }
     
     public static function getManifestDatabase($apiKey) {
-        $manifestZippedFilename = sys_get_temp_dir() . '\destinymanifest.zip';
+        global $settings;
+
+        $manifestDir = $settings['manifestDir'];
+        $manifestZippedFilename = $manifestDir . '/destinymanifest.zip';
         if(!file_exists($manifestZippedFilename)) {
             $manifestUrl = Manifest::getManifestUrl($apiKey);
             $curl = curl_init();
@@ -38,10 +39,10 @@ class Manifest {
         foreach($archive->listContent() as &$fileInfo) {
             $filename = $fileInfo['filename'];
         }
-        $dbFile = sys_get_temp_dir() . '\\' . $filename;
+        $dbFile = $manifestDir . '/' . $filename;
     
         if(!file_exists($dbFile)) {
-            $archive->extract(PCLZIP_OPT_PATH, sys_get_temp_dir());
+            $archive->extract(PCLZIP_OPT_PATH, $manifestDir);
         }
     
         // Prevent multiple queries so people can't do more than just select

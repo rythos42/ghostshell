@@ -16,11 +16,6 @@ const styles = theme => ({
 });
 
 class Drawer extends React.Component {
-  constructor(props) {
-    super(props);
-    props.getMutuallyExclusiveWhereList();
-  }
-
   state = {
     where: -1
   };
@@ -60,7 +55,6 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    getMutuallyExclusiveWhereList: dispatch.destiny.getMutuallyExclusiveWhereList,
     setMutuallyExclusiveWhereFilter: dispatch.destiny.setMutuallyExclusiveWhereFilter
   };
 }

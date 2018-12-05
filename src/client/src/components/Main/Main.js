@@ -46,7 +46,7 @@ class Main extends React.Component {
   constructor(props) {
     super(props);
 
-    props.getAllGhostModTypes();
+    props.initialize();
   }
 
   state = {
@@ -102,7 +102,11 @@ class Main extends React.Component {
               </IconButton>
               <Typography variant="h6" color="inherit">
                 GhostShell
-                <a href="https://www.bungie.net/en/OAuth/Authorize?client_id=25539&response_type=code&state=asdf">
+                <a
+                  href={`https://www.bungie.net/en/OAuth/Authorize?client_id=${
+                    this.props.clientId
+                  }&response_type=code&state=asdf`}
+                >
                   Sign in with Bungie
                 </a>
               </Typography>
@@ -117,16 +121,22 @@ class Main extends React.Component {
   }
 }
 
+function mapStateToProps(state) {
+  return {
+    clientId: state.config.clientId
+  };
+}
+
 function mapDispatchToProps(dispatch) {
   return {
-    getAllGhostModTypes: dispatch.destiny.getAllGhostModTypes
+    initialize: dispatch.config.initialize
   };
 }
 
 export default compose(
   withStyles(styles),
   connect(
-    null,
+    mapStateToProps,
     mapDispatchToProps
   )
 )(Main);

@@ -1,2 +1,5 @@
 vendor
 php_errors.log
+config.json
+config.php
+build

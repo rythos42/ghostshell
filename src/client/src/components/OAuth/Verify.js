@@ -13,9 +13,7 @@ function Verify({ getGhostShellsForCurrentUser }) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    getGhostShellsForCurrentUser: code => {
-      dispatch.destiny.getGhostShellsForCurrentUser(code);
-    }
+    getGhostShellsForCurrentUser: dispatch.destiny.getGhostShellsForCurrentUser
   };
 }
 

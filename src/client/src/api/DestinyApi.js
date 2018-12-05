@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-function getAxiosConfig(accessToken) {
+function getAxiosConfig({ accessToken, apiKey }) {
   const config = {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'X-API-Key': '9d9691432cae49ee93f57e459d4219b8'
+      'X-API-Key': apiKey
     }
   };
   if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
@@ -12,40 +12,48 @@ function getAxiosConfig(accessToken) {
   return config;
 }
 
-async function get(path, accessToken) {
+async function get(path, accessToken, apiKey) {
   const platformUrl = 'https://www.bungie.net/Platform';
-  return axios.get(`${platformUrl}/${path}`, getAxiosConfig(accessToken));
+  return axios.get(`${platformUrl}/${path}`, getAxiosConfig({ accessToken, apiKey }));
 }
 
-export async function getOAuthToken(code) {
-  const data = `grant_type=authorization_code&code=${code}&client_id=25539`;
+export async function getOAuthToken({ code, apiKey, clientId }) {
+  const data = `grant_type=authorization_code&code=${code}&client_id=${clientId}`;
   const response = await axios.post(
     'https://www.bungie.net/platform/app/oauth/token/',
     data,
-    getAxiosConfig()
+    getAxiosConfig({ apiKey })
   );
 
   return {
     accessToken: response.data.access_token,
-    destinyMembershipId: response.data.membership_id
+    destinyMembershipId: response.data.membership_id,
+    apiKey: apiKey
   };
 }
 
-export async function getMembershipInfo({ destinyMembershipId, accessToken }) {
+export async function getMembershipInfo({ destinyMembershipId, accessToken, apiKey }) {
   const membershipType = 254;
   const response = await get(
     `/User/GetMembershipsById/${destinyMembershipId}/${membershipType}/`,
-    accessToken
+    accessToken,
+    apiKey
   );
 
   return response.data.Response;
 }
 
-export async function getCharacterInventories({ membershipId, membershipType, accessToken }) {
+export async function getCharacterInventories({
+  membershipId,
+  membershipType,
+  accessToken,
+  apiKey
+}) {
   const components = 'CharacterInventories';
   const response = await get(
     `/Destiny2/${membershipType}/Profile/${membershipId}/?components=${components}`,
-    accessToken
+    accessToken,
+    apiKey
   );
 
   return response.data.Response.characterInventories.data;
@@ -55,12 +63,14 @@ export async function getItemSockets({
   membershipId,
   membershipType,
   itemInstanceId,
-  accessToken
+  accessToken,
+  apiKey
 }) {
   const components = 'ItemSockets';
   const response = await get(
     `/Destiny2/${membershipType}/Profile/${membershipId}/Item/${itemInstanceId}/?components=${components}`,
-    accessToken
+    accessToken,
+    apiKey
   );
 
   const socketData = response.data.Response.sockets.data;

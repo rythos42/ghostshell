@@ -2,12 +2,15 @@
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json');
 
+include('./config.php');
 include('./Manifest.php');
 include('./Assembler.php');
 include('./GhostModTypes.php');
 
+require_once __DIR__ . '/vendor/autoload.php';
+
 $action = $_REQUEST['action'];
-$apiKey = '9d9691432cae49ee93f57e459d4219b8';
+$apiKey = $settings['apiKey'];
 
 switch($action) {
     case 'select':
