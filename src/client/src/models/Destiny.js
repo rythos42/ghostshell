@@ -36,10 +36,23 @@ export default {
         ...state,
         mutuallyExclusiveWhereFilter: whereId
       };
+    },
+    setHasSignedIn(state) {
+      return {
+        ...state,
+        hasSignedIn: true
+      };
+    },
+    setIsLoadingGhostShells(state, isLoading) {
+      return {
+        ...state,
+        isLoadingGhostShells: isLoading
+      };
     }
   },
   effects: dispatch => ({
     async getGhostShellsForCurrentUser(code) {
+      dispatch.destiny.setIsLoadingGhostShells(true);
       const config = await dispatch.config.getConfig();
       const apiKey = config.apiKey;
       const clientId = config.clientId;
@@ -104,6 +117,8 @@ export default {
           })
         );
         dispatch.destiny.addGhostShells(ghostShells);
+        dispatch.destiny.setHasSignedIn();
+        dispatch.destiny.setIsLoadingGhostShells(false);
       });
     },
     async getMutuallyExclusiveWhereList(manifestServiceUrl) {

@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { compose } from 'redux';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -8,45 +7,29 @@ import Card from '@material-ui/core/Card';
 import IconButton from '@material-ui/core/IconButton';
 import MuiDrawer from '@material-ui/core/Drawer';
 import Hidden from '@material-ui/core/Hidden';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import MenuIcon from '@material-ui/icons/Menu';
-import { withStyles } from '@material-ui/core/styles';
+import RefreshIcon from '@material-ui/icons/Refresh';
 
 import ShellGrid from '../ShellGrid';
 import Drawer from '../Drawer';
-
-const drawerWidth = 240;
-
-const styles = theme => ({
-  root: {
-    display: 'flex'
-  },
-  drawer: {
-    [theme.breakpoints.up('sm')]: {
-      width: drawerWidth,
-      flexShrink: 0
-    }
-  },
-  menuButton: {
-    marginRight: 20,
-    [theme.breakpoints.up('sm')]: {
-      display: 'none'
-    }
-  },
-  drawerPaper: {
-    width: drawerWidth
-  },
-  content: {
-    [theme.breakpoints.up('sm')]: {
-      width: `calc(100% - ${drawerWidth}px)`
-    }
-  }
-});
+import styles from './Main.module.css';
 
 class Main extends React.Component {
+  state = {
+    mobileOpen: false,
+    isReturningUser: false
+  };
+
   constructor(props) {
     super(props);
 
     props.initialize();
+  }
+
+  componentDidMount() {
+    const isReturningUser = global.localStorage.getItem('isReturningUser');
+    this.setState({ isReturningUser: isReturningUser });
   }
 
   state = {
@@ -57,12 +40,15 @@ class Main extends React.Component {
     this.setState(state => ({ mobileOpen: !state.mobileOpen }));
   };
 
-  render() {
-    const { classes } = this.props;
+  handleSignInClick = () => {
+    global.localStorage.setItem('isReturningUser', true);
+    this.setState({ isReturningUser: true });
+  };
 
+  render() {
     return (
-      <div className={classes.root}>
-        <nav className={classes.drawer}>
+      <div className={styles.container}>
+        <nav className={styles.drawer}>
           <Hidden smUp implementation="css">
             <MuiDrawer
               variant="temporary"
@@ -71,7 +57,7 @@ class Main extends React.Component {
               onClose={this.handleDrawerToggle}
               ModalProps={{ keepMounted: true }}
               classes={{
-                paper: classes.drawerPaper
+                paper: styles.drawerPaper
               }}
             >
               <Drawer />
@@ -82,37 +68,42 @@ class Main extends React.Component {
               variant="permanent"
               open
               classes={{
-                paper: classes.drawerPaper
+                paper: styles.drawerPaper
               }}
             >
               <Drawer />
             </MuiDrawer>
           </Hidden>
         </nav>
-        <main className={classes.content}>
+        <main className={styles.main}>
           <AppBar color="default" position="static">
-            <Toolbar>
+            <Toolbar className={styles.toolbar}>
               <IconButton
                 color="inherit"
                 aria-label="Open drawer"
                 onClick={this.handleDrawerToggle}
-                className={classes.menuButton}
+                className={styles.menubutton}
               >
                 <MenuIcon />
               </IconButton>
-              <Typography variant="h6" color="inherit">
-                GhostShell
+              <div className={styles.end}>
                 <a
                   href={`https://www.bungie.net/en/OAuth/Authorize?client_id=${
                     this.props.clientId
                   }&response_type=code&state=asdf`}
+                  onClick={this.handleSignInClick}
                 >
-                  Sign in with Bungie
+                  {this.state.isReturningUser ? (
+                    <RefreshIcon />
+                  ) : (
+                    <Typography color="inherit">Sign in with Bungie</Typography>
+                  )}
                 </a>
-              </Typography>
+              </div>
             </Toolbar>
+            {this.props.isLoadingGhostShells && <LinearProgress variant="query" />}
           </AppBar>
-          <Card>
+          <Card className={styles.content}>
             <ShellGrid />
           </Card>
         </main>
@@ -123,7 +114,8 @@ class Main extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    clientId: state.config.clientId
+    clientId: state.config.clientId,
+    isLoadingGhostShells: state.destiny.isLoadingGhostShells
   };
 }
 
@@ -133,10 +125,7 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-export default compose(
-  withStyles(styles),
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  )
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
 )(Main);

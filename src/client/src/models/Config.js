@@ -9,6 +9,7 @@ export default {
     set(state, config) {
       return {
         ...state,
+        baseName: config.baseName,
         apiKey: config.bungieApiKey,
         clientId: config.bungieClientId,
         manifestServiceUrl: config.manifestServiceUrl
@@ -30,6 +31,7 @@ export default {
       const config = await axios.get('config.json', axiosConfig);
       dispatch.config.set(config.data);
       return {
+        baseName: config.data.baseName,
         apiKey: config.data.bungieApiKey,
         clientId: config.data.bungieClientId,
         manifestServiceUrl: config.data.manifestServiceUrl

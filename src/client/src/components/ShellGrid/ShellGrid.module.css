@@ -2,8 +2,23 @@
   background-color: black;
   width: 100%;
   height: 100%;
-  left: 0;
-  right: 0;
   position: absolute;
-  opacity: 0.5;
+  opacity: 0.6;
+}
+
+.tile {
+  width: 95px !important;
+  height: 95px !important;
+  padding: 0.6em;
+}
+
+.gridContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 4em;
+}
+
+.grid {
+  padding-bottom: 1em;
 }

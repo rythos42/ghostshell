@@ -4,7 +4,7 @@ import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
 import Tooltip from '@material-ui/core/Tooltip';
 
-import modStyles from './ShellGrid.module.css';
+import styles from './ShellGrid.module.css';
 
 class ShellGrid extends React.Component {
   makeTooltip(ghostShell) {
@@ -35,19 +35,26 @@ class ShellGrid extends React.Component {
     const { ghostShells } = this.props;
 
     return (
-      <div>
-        <GridList cellHeight={160}>
-          {ghostShells.map(ghostShell => (
-            <GridListTile key={ghostShell.itemInstanceId}>
-              {this.isFilteredOut(ghostShell, this.props.filteredOutId) && (
-                <div className={modStyles.overlay} />
-              )}
-              <Tooltip title={this.makeTooltip(ghostShell)} aria-label={ghostShell.name}>
-                <img src={ghostShell.icon} alt="Shell" />
-              </Tooltip>
-            </GridListTile>
-          ))}
-        </GridList>
+      <div className={styles.gridContainer}>
+        {ghostShells.length > 0 ? (
+          <GridList className={styles.grid}>
+            {ghostShells.map(ghostShell => (
+              <GridListTile
+                key={ghostShell.itemInstanceId}
+                classes={{ root: styles.tile, tile: styles.tile }}
+              >
+                {this.isFilteredOut(ghostShell, this.props.filteredOutId) && (
+                  <div className={styles.overlay} />
+                )}
+                <Tooltip title={this.makeTooltip(ghostShell)} aria-label={ghostShell.name}>
+                  <img src={ghostShell.icon} alt="Shell" />
+                </Tooltip>
+              </GridListTile>
+            ))}
+          </GridList>
+        ) : (
+          <div>Sign in or refresh to see your Ghost Shells.</div>
+        )}
       </div>
     );
   }

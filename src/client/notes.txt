@@ -1,23 +1,7 @@
-UI
-    - disable filters if not signed in
-    - labels on input fields in drawers
-    - make Sign in button pretty
-    - allow table to expand to a certain degree
-    - mobile friendly
-    - make table cells nice
-    - overlay should be exactly the size of the icon/border stuff
-
-
 - find Vault shells
 - find Warlock shells
 - UI to filter by "what" and "regular where" -- maybe filter buttons as I wanted?
-- fix  basename="/ghostshell"
 
-Persistence
-    - don't need to store accesstoken - we aren't using it multiple times
-    - "refresh" will get a new one
-    - should make an icon for users who haven't been before and a different icon for returning users ("refresh")
-    - store whether a user is returning or not in localStorage
 
 Future
 - getGhostShellsForCurrentUser is huge and needs refactoring badly
@@ -26,8 +10,12 @@ Future
 - better ACAO
 - see about removing "select" action on Service -- it's too wide, even though it's not secret information
 - "TangledShore" in drop down isn't right
-- standardize on CSS modules, I like them more than withStyles
 - maybe a little UI around the ghost icon with icons that can be hovered over to say where (Vault, Warlock, etc) and tooltips for the sockets and the categories
 - remove Redux-Saga after I'm convinced I don't need it.
 - don't think I need to unzip the manifestDb in order to read the filename -- can get it from the /manifest call
 - collate some of the calls being made
+- can't hover over overlayed cells to see stats
+- consider storing ghostshells in localStorage as well so refresh is literally just that
+- tooltip over disabled filters
+- tooltip on refresh button
+- helper function to create a config object -- creating it in two places

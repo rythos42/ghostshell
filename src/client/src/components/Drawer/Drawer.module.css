@@ -1,0 +1,9 @@
+.drawer {
+  width: 100%;
+  max-width: 360px;
+}
+
+.formControl {
+  margin: 0.6em;
+  min-width: 120px;
+}
