@@ -49,13 +49,14 @@ class Manifest {
         return new PDO('sqlite:' . $dbFile, null, null, [PDO::MYSQL_ATTR_MULTI_STATEMENTS => false]);
     }
 
-    public static function createSelect($table, $hashesArray) {
-        $query = "select * from {$table} where ";
+    public static function createSelect($table, $hashesArray, $additionalWhere = '') {
+        $query = "select * from {$table} where (";
         $prepend = "";
         foreach($hashesArray as $hash) {
             $query = $query . $prepend . "id + 4294967296 = {$hash} OR id = {$hash}";
             $prepend = " or ";
         }
+        $query = $query . ')' . $additionalWhere;
 
         return $query;
     }

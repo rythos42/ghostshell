@@ -12,6 +12,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 
 import store from './Store';
 import Routes from './components/Routes';
+import Initialize from './components/Initialize';
 
 const jss = create(jssPreset());
 jss.options.insertionPoint = document.getElementById('jss-insertion-point');
@@ -23,6 +24,7 @@ function App() {
     <Provider store={store}>
       <JssProvider jss={jss} generateClassName={generateClassName}>
         <MuiThemeProvider theme={theme}>
+          <Initialize />
           <CssBaseline />
           <Routes />
         </MuiThemeProvider>

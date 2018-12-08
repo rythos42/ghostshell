@@ -1,11 +1,14 @@
-- find Vault shells
-- find Warlock shells
+- basename still not working
 - UI to filter by "what" and "regular where" -- maybe filter buttons as I wanted?
+- that getGhostShells vault section is ungodly
 
 
 Future
+- colors for accordians
+- rounded corners on icons or icon containers
 - getGhostShellsForCurrentUser is huge and needs refactoring badly
 - be able to equip and show which one is currently equipped
+    - and select which character to equip it to
 - get rid of the spaces at the front of GhostModTypes::GhostModTypeMappings and do a proper regex
 - better ACAO
 - see about removing "select" action on Service -- it's too wide, even though it's not secret information
@@ -19,3 +22,4 @@ Future
 - tooltip over disabled filters
 - tooltip on refresh button
 - helper function to create a config object -- creating it in two places
+- have Service return only data I'm actually using

@@ -43,6 +43,6 @@
   }
 
   .main {
-    width: calc(100% - (var(--drawerWidth) px));
+    width: calc(100% - (var(--drawerWidth)));
   }
 }

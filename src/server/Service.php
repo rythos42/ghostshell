@@ -62,6 +62,19 @@ switch($action) {
 
         break;
 
+    case 'getGhostShellsFromVault':
+        if(!$_REQUEST['hash']) {
+            echo '[]';
+            break;
+        }
+        $hashesArray = explode(',', $_REQUEST['hash']);
+        
+        $query = Manifest::createSelect('DestinyInventoryItemDefinition', $hashesArray, "and json like '%\"bucketTypeHash\":4023194814%'");
+        $manifestDb = Manifest::getManifestDatabase($apiKey);
+        $statement = $manifestDb->query($query);
+        echo Assembler::jsonEncode($statement);
+        break;
+
     case 'enums_getMutuallyExclusiveWhere':
         echo json_encode(GhostModTypes::getMutuallyExclusiveWhere());
         break;

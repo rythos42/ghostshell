@@ -21,12 +21,6 @@ class Main extends React.Component {
     isReturningUser: false
   };
 
-  constructor(props) {
-    super(props);
-
-    props.initialize();
-  }
-
   componentDidMount() {
     const isReturningUser = global.localStorage.getItem('isReturningUser');
     this.setState({ isReturningUser: isReturningUser });
@@ -119,13 +113,4 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch) {
-  return {
-    initialize: dispatch.config.initialize
-  };
-}
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Main);
+export default connect(mapStateToProps)(Main);
