@@ -3,7 +3,7 @@ node_js:
   - "node"
 before_script:
   - npm install -g yarn
-  - yarn build
+  - src/client/yarn build
 after_success:
   - ./deploy.sh
 sudo: false
