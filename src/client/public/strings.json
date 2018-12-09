@@ -1,0 +1,22 @@
+{
+  "enums": {
+    "HellasBasin": "Mars",
+    "TangledShore": "Tangled Shore",
+    "DreamingCity": "Dreaming City",
+    "PublicEvents": "Public Events",
+    "SolarWeapon": "Solar Weapon",
+    "ArcWeapon": "Arc Weapon",
+    "VoidWeapon": "Void Weapon",
+    "ElementalWeapon": "Elemental Weapon",
+    "FactionConsumables": "Faction Consumables",
+    "BrightEngrams": "Bright Engrams",
+    "VehicleLessTimeToSummon": "Summon Vehicle Faster",
+    "ReloadYourWeapon": "Reload Weapon"
+  },
+  "categories": {
+    "planets": "Planets",
+    "gameModes": "Game Modes",
+    "weapons": "Weapons",
+    "effect": "Effects"
+  }
+}

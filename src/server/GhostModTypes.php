@@ -27,8 +27,6 @@ abstract class GhostModTypes {
     const Gambit = 20;
     const Crucible = 21;
     const Strikes = 22;
-    private static $ExclusiveWhere = array(GhostModTypes::Io, GhostModTypes::HellasBasin, GhostModTypes::Mercury, GhostModTypes::TangledShore, GhostModTypes::DreamingCity, 
-        GhostModTypes::Titan, GhostModTypes::EDZ, GhostModTypes::Nessus, GhostModTypes::Leviathan, GhostModTypes::Gambit, GhostModTypes::Crucible, GhostModTypes::Strikes);
 
     // ANYWHERE
     const PublicEvents = 23;
@@ -84,11 +82,17 @@ abstract class GhostModTypes {
             $constantArray[$value] = $name;
         }
 
-        return $constantArray;
-    }
+        $constantArray['categorized'] = array(
+            "planets" => array(GhostModTypes::Io, GhostModTypes::HellasBasin, GhostModTypes::Mercury, GhostModTypes::TangledShore, GhostModTypes::DreamingCity, 
+                GhostModTypes::Titan, GhostModTypes::EDZ, GhostModTypes::Nessus, GhostModTypes::Leviathan),
+            "gameModes" => array(GhostModTypes::Gambit, GhostModTypes::Crucible, GhostModTypes::Strikes, GhostModTypes::PublicEvents, GhostModTypes::Ride),
+            "weapons" => array(GhostModTypes::SolarWeapon, GhostModTypes::ArcWeapon, GhostModTypes::VoidWeapon, GhostModTypes::ElementalWeapon),
+            "effect" => array(GhostModTypes::Caches, GhostModTypes::Resources, GhostModTypes::XP, GhostModTypes::Glimmer, GhostModTypes::FactionConsumables, 
+                GhostModTypes::Loot, GhostModTypes::Telemetry, GhostModTypes::BrightEngram, GhostModTypes::Exotic, GhostModTypes::VehicleLessTimeToSummon, 
+                GhostModTypes::ReloadYourWeapon)
+        );
 
-    public static function getMutuallyExclusiveWhere() {
-        return GhostModTypes::$ExclusiveWhere;
+        return $constantArray;
     }
 
     public static function getGhostModTypesForString($description) {

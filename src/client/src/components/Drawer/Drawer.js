@@ -4,52 +4,123 @@ import { compose } from 'redux';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import { withStyles } from '@material-ui/core';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Typography from '@material-ui/core/Typography';
+import Checkbox from '@material-ui/core/Checkbox';
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import Button from '@material-ui/core/Button';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
 
 import styles from './Drawer.module.css';
 
 class Drawer extends React.Component {
   state = {
-    where: -1
+    filter: {}
   };
 
   handleWhereChange = event => {
-    this.setState({ where: event.target.value });
-    this.props.setMutuallyExclusiveWhereFilter(event.target.value);
+    const newState = { filter: { ...this.state.filter } };
+
+    newState.filter[event.target.value] = !newState.filter[event.target.value];
+
+    this.setState(newState);
+
+    const onlyTrueValues = {};
+    Object.keys(newState.filter).forEach(filterKey => {
+      if (newState.filter[filterKey]) onlyTrueValues[filterKey] = true;
+    });
+
+    this.props.setFilter(onlyTrueValues);
+  };
+
+  clearFilter = () => {
+    const state = { filter: {} };
+    this.setState(state);
+    this.props.setFilter(state.filter);
+  };
+
+  getStringForEnum = enumValue => {
+    const enumString = this.props.ghostModTypes[enumValue];
+
+    const resourceString = this.props.enumStrings[enumString];
+    return resourceString ? resourceString : enumString;
+  };
+
+  getStringForCategory = categoryKey => {
+    const resourceString = this.props.categoryStrings[categoryKey];
+    return resourceString ? resourceString : categoryKey;
   };
 
   render() {
     return (
       <div className={styles.drawer}>
-        <List>
-          <ListItem>
+        <AppBar color="default" position="static">
+          <Toolbar className={styles.toolbar}>
             <Typography variant="h6">Filter</Typography>
-          </ListItem>
-          <ListItem>
-            <FormControl className={styles.formControl}>
-              <InputLabel shrink htmlFor="mutuallyExclusiveWhere">
-                Where
-              </InputLabel>
-              <Select
-                value={this.state.where}
-                onChange={this.handleWhereChange}
-                id="mutuallyExclusiveWhere"
-                disabled={!this.props.hasSignedIn}
-              >
-                <MenuItem value="-1">None</MenuItem>
-                {this.props.mutuallyExclusiveWhereList.map(where => (
-                  <MenuItem value={where.id} key={where.id}>
-                    {where.name}
-                  </MenuItem>
+            <div className={styles.end}>
+              <Button color="primary" size="small" onClick={this.clearFilter}>
+                CLEAR
+              </Button>
+            </div>
+          </Toolbar>
+        </AppBar>
+
+        {Object.keys(this.props.ghostModTypes.categorized).map(key => (
+          <ExpansionPanel key={key}>
+            <ExpansionPanelSummary
+              expandIcon={<ExpandMoreIcon />}
+              classes={{
+                root: styles.expansionPanelSummary,
+                content: styles.expansionPanelSummary,
+                expandIcon: styles.expansionPanelSummary
+              }}
+            >
+              <Typography>{this.getStringForCategory(key)}</Typography>
+            </ExpansionPanelSummary>
+            <ExpansionPanelDetails classes={{ root: styles.expansionPanelDetails }}>
+              <List>
+                {this.props.ghostModTypes.categorized[key].map(modType => (
+                  <ListItem key={modType} className={styles.listItem}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={this.state.filter[modType] || ''}
+                          onChange={this.handleWhereChange}
+                          value={modType.toString()}
+                        />
+                      }
+                      label={this.getStringForEnum(modType)}
+                    />
+                  </ListItem>
                 ))}
-              </Select>
-            </FormControl>
-          </ListItem>
-        </List>
+              </List>
+            </ExpansionPanelDetails>
+          </ExpansionPanel>
+        ))}
+
+        <ExpansionPanel>
+          <ExpansionPanelSummary
+            expandIcon={<ExpandMoreIcon />}
+            classes={{
+              root: styles.expansionPanelSummary,
+              content: styles.expansionPanelSummary,
+              expandIcon: styles.expansionPanelSummary
+            }}
+          >
+            <Typography>About</Typography>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails classes={{ root: styles.expansionPanelDetails }}>
+            <Typography variant="caption">
+              Designed and developed by <a href="mailto:rythos42@gmail.com">Craig Fleming</a>.
+              E-mail for bugs or feature requests!{' '}
+              <a href="https://github.com/rythos42/GhostShell">GitHub</a> pull requests welcomed!
+            </Typography>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
       </div>
     );
   }
@@ -57,14 +128,16 @@ class Drawer extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    mutuallyExclusiveWhereList: state.destiny.mutuallyExclusiveWhereList,
-    hasSignedIn: state.destiny.hasSignedIn
+    ghostModTypes: state.destiny.ghostModTypes,
+    hasSignedIn: state.destiny.hasSignedIn,
+    enumStrings: state.strings.enums,
+    categoryStrings: state.strings.categories
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    setMutuallyExclusiveWhereFilter: dispatch.destiny.setMutuallyExclusiveWhereFilter
+    setFilter: dispatch.destiny.setFilter
   };
 }
 

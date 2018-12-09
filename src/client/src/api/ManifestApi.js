@@ -12,12 +12,6 @@ export async function categorizeSockets(manifestServiceUrl, socketPlugHashes) {
   return response.data;
 }
 
-export async function getMutuallyExclusiveWhere(manifestServiceUrl) {
-  const path = `${manifestServiceUrl}?action=enums_getMutuallyExclusiveWhere`;
-  const response = await axios.get(path);
-  return response.data;
-}
-
 export async function getAllGhostModTypes(manifestServiceUrl) {
   const path = `${manifestServiceUrl}?action=enums_getAllGhostModTypes`;
   const response = await axios.get(path);

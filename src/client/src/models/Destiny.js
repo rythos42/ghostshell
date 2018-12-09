@@ -4,37 +4,21 @@ import * as ManifestApi from '../api/ManifestApi';
 export default {
   state: {
     ghostShells: [],
-    mutuallyExclusiveWhereList: [],
-    ghostModTypes: {},
-    mutuallyExclusiveWhereFilter: -1
+    ghostModTypes: { categorized: {} },
+    filter: {}
   },
   reducers: {
     addGhostShells(state, ghostShells) {
+      global.localStorage.setItem('ghostShells', JSON.stringify(ghostShells));
       return {
         ...state,
         ghostShells
-      };
-    },
-    setMutuallyExclusiveWhereList(state, mutuallyExclusiveWhereList) {
-      mutuallyExclusiveWhereList = mutuallyExclusiveWhereList.map(where => {
-        return { name: state.ghostModTypes[where], id: where };
-      });
-
-      return {
-        ...state,
-        mutuallyExclusiveWhereList
       };
     },
     setAllGhostModTypes(state, ghostModTypes) {
       return {
         ...state,
         ghostModTypes
-      };
-    },
-    setMutuallyExclusiveWhereFilter(state, whereId) {
-      return {
-        ...state,
-        mutuallyExclusiveWhereFilter: whereId
       };
     },
     setHasSignedIn(state) {
@@ -47,6 +31,12 @@ export default {
       return {
         ...state,
         isLoadingGhostShells: isLoading
+      };
+    },
+    setFilter(state, filter) {
+      return {
+        ...state,
+        filter: { ...filter }
       };
     }
   },
@@ -94,27 +84,19 @@ export default {
               'DestinyInventoryItemDefinition',
               ghostShell.itemHash
             );
+            ghostShell.name = itemDefinition[0].displayProperties.name;
+            ghostShell.icon = itemDefinition[0].displayProperties.icon;
 
-            const itemSockets = await DestinyApi.getItemSockets({
+            const categorizedSockets = await getCategorizedSocketsForItemInstance({
               membershipId: membership.membershipId,
               membershipType: membership.membershipType,
               accessToken: oAuthToken.accessToken,
               itemInstanceId: ghostShell.itemInstanceId,
-              apiKey: apiKey
+              apiKey,
+              manifestServiceUrl
             });
 
-            const socketPlugHashes = itemSockets.map(itemSocket => itemSocket.plugHash);
-            const categorizedSockets = await ManifestApi.categorizeSockets(
-              manifestServiceUrl,
-              socketPlugHashes.filter(socketPlugHash => socketPlugHash != null)
-            );
-
-            return {
-              itemInstanceId: ghostShell.itemInstanceId,
-              name: itemDefinition[0].displayProperties.name,
-              icon: `https://www.bungie.net${itemDefinition[0].displayProperties.icon}`,
-              sockets: categorizedSockets
-            };
+            return createGhostShell(ghostShell, categorizedSockets);
           })
         );
 
@@ -156,14 +138,7 @@ export default {
               manifestServiceUrl
             });
 
-            console.log(vaultGhostItem);
-
-            return {
-              itemInstanceId: vaultGhostItem.itemInstanceId,
-              name: vaultGhostItem.name,
-              icon: `https://www.bungie.net${vaultGhostItem.icon}`,
-              sockets: vaultGhostItemCategorizedSockets
-            };
+            return createGhostShell(vaultGhostItem, vaultGhostItemCategorizedSockets);
           })
         );
 
@@ -172,13 +147,17 @@ export default {
         dispatch.destiny.setIsLoadingGhostShells(false);
       });
     },
-    async getMutuallyExclusiveWhereList(manifestServiceUrl) {
-      const exclusiveWhereList = await ManifestApi.getMutuallyExclusiveWhere(manifestServiceUrl);
-      dispatch.destiny.setMutuallyExclusiveWhereList(exclusiveWhereList);
-    },
     async getAllGhostModTypes(manifestServiceUrl) {
       const ghostModTypes = await ManifestApi.getAllGhostModTypes(manifestServiceUrl);
       dispatch.destiny.setAllGhostModTypes(ghostModTypes);
+    },
+    initialize() {
+      const ghostShellsJson = global.localStorage.getItem('ghostShells');
+      if (ghostShellsJson) {
+        const ghostShells = JSON.parse(ghostShellsJson);
+        dispatch.destiny.addGhostShells(ghostShells);
+        dispatch.destiny.setHasSignedIn();
+      }
     }
   })
 };
@@ -206,7 +185,7 @@ async function getCategorizedSocketsForItemInstance({
   );
 }
 
-export function getItemsFromBucket(bucket, bucketHash) {
+function getItemsFromBucket(bucket, bucketHash) {
   const array = [];
   for (let itemIndex = 0; itemIndex < bucket.length; itemIndex++) {
     const item = bucket[itemIndex];
@@ -218,4 +197,13 @@ export function getItemsFromBucket(bucket, bucketHash) {
     }
   }
   return array;
+}
+
+function createGhostShell(ghostShell, sockets) {
+  return {
+    itemInstanceId: ghostShell.itemInstanceId,
+    name: ghostShell.name,
+    icon: `https://www.bungie.net${ghostShell.icon}`,
+    sockets: sockets
+  };
 }

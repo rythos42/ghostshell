@@ -1,9 +1,34 @@
 .drawer {
   width: 100%;
   max-width: 360px;
+  padding: 1em;
 }
 
 .formControl {
   margin: 0.6em;
   min-width: 120px;
+}
+
+.listItem {
+  padding: 0;
+}
+
+.expansionPanelSummary {
+  margin: 0 !important;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.expansionPanelDetails {
+  padding-top: 0;
+}
+
+.toolbar {
+  display: flex;
+  justify-items: flex-start;
+}
+
+.toolbar .end {
+  margin-left: auto;
+  display: flex;
 }

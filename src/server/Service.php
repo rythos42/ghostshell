@@ -75,10 +75,6 @@ switch($action) {
         echo Assembler::jsonEncode($statement);
         break;
 
-    case 'enums_getMutuallyExclusiveWhere':
-        echo json_encode(GhostModTypes::getMutuallyExclusiveWhere());
-        break;
-
     case 'enums_getAllGhostModTypes':
         echo json_encode(GhostModTypes::getAllGhostModTypes());
         break;

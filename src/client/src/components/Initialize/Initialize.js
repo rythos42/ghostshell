@@ -4,7 +4,9 @@ import { connect } from 'react-redux';
 
 class Initialize extends React.Component {
   componentDidMount() {
-    this.props.initialize();
+    this.props.initializeConfig();
+    this.props.initializeStrings();
+    this.props.initializeDestiny();
   }
 
   render() {
@@ -14,7 +16,9 @@ class Initialize extends React.Component {
 
 function mapDispatchToProps(dispatch) {
   return {
-    initialize: dispatch.config.initialize
+    initializeConfig: dispatch.config.initialize,
+    initializeStrings: dispatch.strings.initialize,
+    initializeDestiny: dispatch.destiny.initialize
   };
 }
 
