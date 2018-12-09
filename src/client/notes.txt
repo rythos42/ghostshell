@@ -1,14 +1,18 @@
-- colors for accordians
 - be able to equip and show which one is currently equipped
     - and select which character to equip it to
 - travisCI automatic deployment
     - I'm sure it can do a yarn build for me and ftp the contents up
 
+
 Future
+- update readme
+- tooltip isn't great on mobile -- have to long press for 0
+- colors for accordians?
 - rounded corners on icons or icon containers
 - getGhostShellsForCurrentUser is huge and needs refactoring badly
     - vault section in particular is has a ton of loops in it
     - collate some of the calls being made
+    - that login is NOT fast
 - get rid of the spaces at the front of GhostModTypes::GhostModTypeMappings and do a proper regex
 - better ACAO
 - see about removing "select" action on Service -- it's too wide, even though it's not secret information

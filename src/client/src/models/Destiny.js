@@ -86,6 +86,7 @@ export default {
             );
             ghostShell.name = itemDefinition[0].displayProperties.name;
             ghostShell.icon = itemDefinition[0].displayProperties.icon;
+            ghostShell.description = itemDefinition[0].displayProperties.description;
 
             const categorizedSockets = await getCategorizedSocketsForItemInstance({
               membershipId: membership.membershipId,
@@ -123,7 +124,8 @@ export default {
             return {
               ...vaultGhostItem,
               name: vaultShellData.displayProperties.name,
-              icon: vaultShellData.displayProperties.icon
+              icon: vaultShellData.displayProperties.icon,
+              description: vaultShellData.displayProperties.description
             };
           });
 

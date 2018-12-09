@@ -52,6 +52,7 @@ switch($action) {
     
             $ghost = array(
                 "name" => $rowObject->displayProperties->name,
+                "description" => $rowObject->displayProperties->description,
                 "hash" => $rowObject->hash,
                 "ghostModTypes" => GhostModTypes::getGhostModTypesForString($description)
             );
