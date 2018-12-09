@@ -1,1 +1,1 @@
-console.log('No tests to run...');
+test('it succeeds', () => {});
