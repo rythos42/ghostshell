@@ -1,0 +1,15 @@
+{
+  "name": "ghostshell",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/rythos42/ghostshell.git",
+  "author": "Craig Fleming <rythos42@gmail.com>",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "ftp-deploy": "^2.2.1"
+  },
+  "scripts": {
+    "deploy": "node deploy"
+  }
+}

@@ -4,3 +4,4 @@ config.json
 config.php
 build
 o-ri
+node_modules
