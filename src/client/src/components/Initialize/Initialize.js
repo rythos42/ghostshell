@@ -3,10 +3,12 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 class Initialize extends React.Component {
-  componentDidMount() {
-    this.props.initializeConfig();
-    this.props.initializeStrings();
+  async componentDidMount() {
     this.props.initializeDestiny();
+    this.props.initializeStrings();
+
+    await this.props.initializeConfig();
+    this.props.getRaceGenderClassData();
   }
 
   render() {
@@ -18,7 +20,8 @@ function mapDispatchToProps(dispatch) {
   return {
     initializeConfig: dispatch.config.initialize,
     initializeStrings: dispatch.strings.initialize,
-    initializeDestiny: dispatch.destiny.initialize
+    initializeDestiny: dispatch.destiny.initialize,
+    getRaceGenderClassData: dispatch.destiny.getRaceGenderClassData
   };
 }
 

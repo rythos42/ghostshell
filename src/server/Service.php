@@ -79,6 +79,39 @@ switch($action) {
     case 'enums_getAllGhostModTypes':
         echo json_encode(GhostModTypes::getAllGhostModTypes());
         break;
+
+    case 'data_getRaceGenderClass':
+        $manifestDb = Manifest::getManifestDatabase($apiKey);
+
+        $raceQuery = Manifest::createSelect('DestinyRaceDefinition');
+        $raceStatement = $manifestDb->query($raceQuery);
+        $races = array();
+        while($raceRow = $raceStatement->fetch(PDO::FETCH_ASSOC)) {
+            array_push($races, json_decode($raceRow['json']));
+        } 
+        
+        $classQuery = Manifest::createSelect('DestinyClassDefinition');
+        $classStatement = $manifestDb->query($classQuery);
+        $classes = array();
+        while($classRow = $classStatement->fetch(PDO::FETCH_ASSOC)) {
+            array_push($classes, json_decode($classRow['json']));
+        } 
+        
+        $genderQuery = Manifest::createSelect('DestinyGenderDefinition');
+        $genderStatement = $manifestDb->query($genderQuery);
+        $genders = array();
+        while($genderRow = $genderStatement->fetch(PDO::FETCH_ASSOC)) {
+            array_push($genders, json_decode($genderRow['json']));
+        } 
+
+        $data = array(
+            "races" => $races,
+            "classes" => $classes,
+            "genders" => $genders
+        );
+        
+        echo json_encode($data);
+        break;
 }
 
 ?>

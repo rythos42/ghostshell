@@ -6,22 +6,8 @@
   display: flex;
 }
 
-.menuButton {
-  margin-right: 20;
-}
-
 .drawerPaper {
   width: var(--drawerWidth);
-}
-
-.toolbar {
-  display: flex;
-  justify-items: flex-start;
-}
-
-.toolbar .end {
-  margin-left: auto;
-  display: flex;
 }
 
 .main {
@@ -36,10 +22,6 @@
   .drawer {
     width: var(--drawerWidth);
     flex-shrink: 0;
-  }
-
-  .menubutton {
-    display: none;
   }
 
   .main {

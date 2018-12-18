@@ -14,11 +14,12 @@
   height: 95px !important;
   margin: 0.4em;
   border-radius: 5px;
+  transition: 0.2s;
 }
 
-.tile:hover {
-  transition: 0.25s;
-  transform: scale(1.05, 1.05);
+.tile.selected {
+  transition: 0.2s;
+  transform: scale(1.07, 1.07);
   z-index: 100;
 }
 

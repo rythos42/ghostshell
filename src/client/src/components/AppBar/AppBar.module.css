@@ -1,0 +1,15 @@
+.toolbar {
+  display: flex;
+  justify-items: flex-start;
+}
+
+.toolbar .end {
+  margin-left: auto;
+  display: flex;
+}
+
+@media (min-width: 600px) {
+  .menubutton {
+    display: none;
+  }
+}

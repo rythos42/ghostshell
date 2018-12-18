@@ -3,9 +3,16 @@ import * as ManifestApi from '../api/ManifestApi';
 
 export default {
   state: {
+    oAuthToken: {},
     ghostShells: [],
+    characters: [],
     ghostModTypes: { categorized: {} },
-    filter: {}
+    filter: {},
+    races: [],
+    genders: [],
+    classes: [],
+    equipItemResponse: {},
+    selectedGhostShell: null
   },
   reducers: {
     addGhostShells(state, ghostShells) {
@@ -13,6 +20,13 @@ export default {
       return {
         ...state,
         ghostShells
+      };
+    },
+    setCharacters(state, characters) {
+      global.localStorage.setItem('characters', JSON.stringify(characters));
+      return {
+        ...state,
+        characters
       };
     },
     setAllGhostModTypes(state, ghostModTypes) {
@@ -27,10 +41,10 @@ export default {
         hasSignedIn: true
       };
     },
-    setIsLoadingGhostShells(state, isLoading) {
+    setIsLoading(state, isLoading) {
       return {
         ...state,
-        isLoadingGhostShells: isLoading
+        isLoading: isLoading
       };
     },
     setFilter(state, filter) {
@@ -38,34 +52,108 @@ export default {
         ...state,
         filter: { ...filter }
       };
+    },
+    setRaces(state, races) {
+      return {
+        ...state,
+        races: [...races]
+      };
+    },
+    setGenders(state, genders) {
+      return {
+        ...state,
+        genders: [...genders]
+      };
+    },
+    setClasses(state, classes) {
+      return {
+        ...state,
+        classes: [...classes]
+      };
+    },
+    setSelectedShell(state, selectedGhostShell) {
+      return {
+        ...state,
+        selectedGhostShell: selectedGhostShell
+      };
+    },
+    setOAuthToken(state, oAuthToken) {
+      global.localStorage.setItem('oAuthToken', JSON.stringify(oAuthToken));
+      return {
+        ...state,
+        oAuthToken: oAuthToken
+      };
+    },
+    setEquipItemResponse(state, equipItemResponse) {
+      return {
+        ...state,
+        equipItemResponse
+      };
     }
   },
   effects: dispatch => ({
-    async getGhostShellsForCurrentUser(code) {
-      dispatch.destiny.setIsLoadingGhostShells(true);
-      const config = await dispatch.config.getConfig();
-      const apiKey = config.apiKey;
-      const clientId = config.clientId;
-      const manifestServiceUrl = config.manifestServiceUrl;
-
+    async getOAuthTokenAndGhostShells(code) {
+      await dispatch.destiny.getOAuthToken(code);
+      await dispatch.destiny.getGhostShellsForCurrentUser();
+    },
+    async getOAuthToken(code, state) {
+      const { apiKey, clientId } = state.config;
       const oAuthToken = await DestinyApi.getOAuthToken({ code, apiKey, clientId });
+      dispatch.destiny.setOAuthToken(oAuthToken);
+    },
+    async getGhostShellsForCurrentUser(args, state) {
+      dispatch.destiny.setIsLoading(true);
+
+      const manifestServiceUrl = state.config.manifestServiceUrl;
+      const oAuthToken = state.destiny.oAuthToken;
+      const apiKey = oAuthToken.apiKey;
       const membershipInfo = await DestinyApi.getMembershipInfo(oAuthToken);
       const memberships = membershipInfo.destinyMemberships;
 
       memberships.forEach(async membership => {
-        const characters = await DestinyApi.getProfileItems({
+        const characters = await DestinyApi.getProfileData({
           membershipId: membership.membershipId,
           membershipType: membership.membershipType,
           accessToken: oAuthToken.accessToken,
           apiKey: apiKey
         });
 
+        const characterData = [];
+        const characterDescriptions = {};
+        const bungieCharacters = characters.characters.data;
+        for (let characterId in bungieCharacters) {
+          if (!bungieCharacters.hasOwnProperty(characterId)) continue;
+
+          const character = bungieCharacters[characterId];
+          const raceString = await dispatch.destiny.getRaceString(character.raceHash);
+          const classString = await dispatch.destiny.getClassString(character.classHash);
+          const genderString = await dispatch.destiny.getGenderString(character.genderHash);
+          characterDescriptions[
+            characterId
+          ] = `${classString.toUpperCase()} ${raceString} ${genderString}`;
+
+          characterData.push({
+            characterId: characterId,
+            emblemBackgroundPath: character.emblemBackgroundPath,
+            membershipType: membership.membershipType,
+            raceString: raceString,
+            classString: classString,
+            genderString: genderString
+          });
+        }
+        dispatch.destiny.setCharacters(characterData);
+
         let ghostShellData = [];
         const characterInventory = characters.characterInventories.data;
         for (let characterId in characterInventory) {
           if (!characterInventory.hasOwnProperty(characterId)) continue;
           ghostShellData = ghostShellData.concat(
-            getItemsFromBucket(characterInventory[characterId].items, 4023194814)
+            getItemsFromBucket(
+              characterInventory[characterId].items,
+              4023194814,
+              characterId,
+              characterDescriptions[characterId]
+            )
           );
         }
 
@@ -73,7 +161,12 @@ export default {
         for (let characterId in characterEquipment) {
           if (!characterEquipment.hasOwnProperty(characterId)) continue;
           ghostShellData = ghostShellData.concat(
-            getItemsFromBucket(characterEquipment[characterId].items, 4023194814)
+            getItemsFromBucket(
+              characterEquipment[characterId].items,
+              4023194814,
+              characterId,
+              characterDescriptions[characterId]
+            )
           );
         }
 
@@ -102,7 +195,12 @@ export default {
         );
 
         // this section is currently really inefficient...
-        const vaultItems = getItemsFromBucket(characters.profileInventory.data.items, 138197802);
+        const vaultItems = getItemsFromBucket(
+          characters.profileInventory.data.items,
+          138197802,
+          'vault',
+          'Vault'
+        );
 
         const vaultShellsData = await ManifestApi.getGhostShellsFromVault({
           manifestServiceUrl,
@@ -146,20 +244,70 @@ export default {
 
         dispatch.destiny.addGhostShells(ghostShells.concat(vaultGhostShells));
         dispatch.destiny.setHasSignedIn();
-        dispatch.destiny.setIsLoadingGhostShells(false);
+        dispatch.destiny.setIsLoading(false);
       });
     },
-    async getAllGhostModTypes(manifestServiceUrl) {
-      const ghostModTypes = await ManifestApi.getAllGhostModTypes(manifestServiceUrl);
+    async getAllGhostModTypes(arg, state) {
+      const ghostModTypes = await ManifestApi.getAllGhostModTypes(state.config.manifestServiceUrl);
       dispatch.destiny.setAllGhostModTypes(ghostModTypes);
     },
     initialize() {
-      const ghostShellsJson = global.localStorage.getItem('ghostShells');
-      if (ghostShellsJson) {
-        const ghostShells = JSON.parse(ghostShellsJson);
+      function getObject(key) {
+        const json = global.localStorage.getItem(key);
+        return json ? JSON.parse(json) : null;
+      }
+
+      const ghostShells = getObject('ghostShells');
+      if (ghostShells) {
         dispatch.destiny.addGhostShells(ghostShells);
         dispatch.destiny.setHasSignedIn();
       }
+
+      const characters = getObject('characters');
+      if (characters) dispatch.destiny.setCharacters(characters);
+
+      const oAuthToken = getObject('oAuthToken');
+      if (oAuthToken) dispatch.destiny.setOAuthToken(oAuthToken);
+    },
+    async getRaceGenderClassData(arg, state) {
+      const { races, genders, classes } = await ManifestApi.getRaceGenderClassData(
+        state.config.manifestServiceUrl
+      );
+      dispatch.destiny.setRaces(races);
+      dispatch.destiny.setGenders(genders);
+      dispatch.destiny.setClasses(classes);
+    },
+    getRaceString(raceHash, state) {
+      const race = state.destiny.races.find(race => race.hash === raceHash);
+      return race.displayProperties.name;
+    },
+    getClassString(classHash, state) {
+      const destinyClass = state.destiny.classes.find(
+        destinyClass => destinyClass.hash === classHash
+      );
+      return destinyClass.displayProperties.name;
+    },
+    getGenderString(genderHash, state) {
+      const gender = state.destiny.genders.find(gender => gender.hash === genderHash);
+      return gender.displayProperties.name;
+    },
+    async equipSelectedShellToCharacter({ characterId, membershipType }, state) {
+      const selectedGhostShell = state.destiny.selectedGhostShell;
+      const accessToken = state.destiny.oAuthToken.accessToken;
+      const apiKey = state.config.apiKey;
+
+      const response = await DestinyApi.equipItem({
+        characterId,
+        membershipType,
+        accessToken,
+        apiKey,
+        itemId: selectedGhostShell.itemInstanceId
+      });
+
+      dispatch.destiny.setEquipItemResponse(response);
+    },
+    resetEquipItemResponse() {
+      dispatch.destiny.setEquipItemResponse({});
     }
   })
 };
@@ -187,14 +335,16 @@ async function getCategorizedSocketsForItemInstance({
   );
 }
 
-function getItemsFromBucket(bucket, bucketHash) {
+function getItemsFromBucket(bucket, bucketHash, location, locationString) {
   const array = [];
   for (let itemIndex = 0; itemIndex < bucket.length; itemIndex++) {
     const item = bucket[itemIndex];
     if (item.bucketHash === bucketHash) {
       array.push({
         itemHash: item.itemHash,
-        itemInstanceId: item.itemInstanceId
+        itemInstanceId: item.itemInstanceId,
+        location,
+        locationString
       });
     }
   }
@@ -206,6 +356,8 @@ function createGhostShell(ghostShell, sockets) {
     itemInstanceId: ghostShell.itemInstanceId,
     name: ghostShell.name,
     icon: `https://www.bungie.net${ghostShell.icon}`,
-    sockets: sockets
+    sockets: sockets,
+    location: ghostShell.location,
+    locationString: ghostShell.locationString
   };
 }

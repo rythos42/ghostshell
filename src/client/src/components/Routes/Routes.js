@@ -10,7 +10,7 @@ class Routes extends React.Component {
       <BrowserRouter>
         <Switch>
           <Route path="/" exact component={Main} />
-          <Route path="/api/oauth/verify" exact component={Verify} />
+          <Route path="/verify" exact component={Verify} />
         </Switch>
       </BrowserRouter>
     );

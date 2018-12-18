@@ -18,6 +18,12 @@ export async function getAllGhostModTypes(manifestServiceUrl) {
   return response.data;
 }
 
+export async function getRaceGenderClassData(manifestServiceUrl) {
+  const path = `${manifestServiceUrl}?action=data_getRaceGenderClass`;
+  const response = await axios.get(path);
+  return response.data;
+}
+
 export async function getGhostShellsFromVault({ manifestServiceUrl, vaultItems }) {
   // query string parameter got to large with all of the hashes, so had to chunk it down
   const vaultItemChunks = chunkArray(vaultItems, 10);

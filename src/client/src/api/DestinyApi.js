@@ -28,8 +28,39 @@ export async function getOAuthToken({ code, apiKey, clientId }) {
   return {
     accessToken: response.data.access_token,
     destinyMembershipId: response.data.membership_id,
-    apiKey: apiKey
+    apiKey: apiKey,
+    retrievedAt: new Date().toString()
   };
+}
+
+export async function equipItem({ itemId, characterId, membershipType, accessToken, apiKey }) {
+  const data = { itemId, characterId, membershipType };
+  const response = await axios.post(
+    'https://www.bungie.net/platform/Destiny2/Actions/Items/EquipItem/',
+    data,
+    getAxiosConfig({ accessToken, apiKey })
+  );
+
+  return response.data;
+}
+
+export async function transferItemTo({ itemId, characterId, membershipType, accessToken, apiKey }) {
+  /*const data = {
+    characterId: characterId,
+    membershipType: membershipType,
+    itemId: item.id,
+    itemReferenceHash: item.hash,
+    stackSize: 1,
+    transferToVault: false
+  };
+  const data = { itemId, characterId, membershipType };
+  const response = await axios.post(
+    'https://www.bungie.net/platform/Destiny2/Actions/Items/TransferItem/',
+    data,
+    getAxiosConfig({ accessToken, apiKey })
+  );
+
+  return response.data;*/
 }
 
 export async function getMembershipInfo({ destinyMembershipId, accessToken, apiKey }) {
@@ -43,8 +74,8 @@ export async function getMembershipInfo({ destinyMembershipId, accessToken, apiK
   return response.data.Response;
 }
 
-export async function getProfileItems({ membershipId, membershipType, accessToken, apiKey }) {
-  const components = 'CharacterInventories,CharacterEquipment,ProfileInventories';
+export async function getProfileData({ membershipId, membershipType, accessToken, apiKey }) {
+  const components = 'CharacterInventories,CharacterEquipment,ProfileInventories,Characters';
   const response = await get(
     `/Destiny2/${membershipType}/Profile/${membershipId}/?components=${components}`,
     accessToken,

@@ -13,8 +13,8 @@ export default {
   },
   effects: dispatch => ({
     async initialize() {
-      const config = await dispatch.config.getConfig();
-      await dispatch.destiny.getAllGhostModTypes(config.manifestServiceUrl);
+      await dispatch.config.getConfig();
+      await dispatch.destiny.getAllGhostModTypes();
     },
     async getConfig() {
       const axiosConfig = { headers: { 'Content-Type': 'application/json' } };

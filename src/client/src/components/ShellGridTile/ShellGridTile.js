@@ -12,6 +12,9 @@ class ShellGridTile extends React.Component {
         <Typography color="inherit" variant="subtitle1" gutterBottom>
           {ghostShell.name}
         </Typography>
+        <Typography color="inherit" variant="subtitle2" gutterBottom>
+          {ghostShell.locationString}
+        </Typography>
         {ghostShell.sockets.map(socket => (
           <div key={socket.hash}>
             <Typography color="inherit">{socket.name}</Typography>
@@ -50,12 +53,20 @@ class ShellGridTile extends React.Component {
     return false;
   }
 
+  setSelected(selected) {
+    this.setState({ selected: selected });
+  }
+
   render() {
     const ghostShell = this.props.ghostShell;
     return (
       <GridListTile
         key={ghostShell.itemInstanceId}
-        classes={{ root: styles.tile, tile: styles.tile }}
+        classes={{
+          root: styles.tile + (this.props.selected ? ' ' + styles.selected : ''),
+          tile: styles.tile + (this.props.selected ? ' ' + styles.selected : '')
+        }}
+        onClick={() => this.props.onTileClick(ghostShell)}
       >
         <Tooltip
           title={this.makeTooltip(ghostShell)}

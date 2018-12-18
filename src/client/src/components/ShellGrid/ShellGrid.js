@@ -6,6 +6,23 @@ import styles from './ShellGrid.module.css';
 import ShellGridTile from '../ShellGridTile';
 
 class ShellGrid extends React.Component {
+  state = {
+    selectedTileItemInstanceId: null
+  };
+
+  handleTileClick = selectedGhostShell => {
+    const isCurrentlySelectedShell =
+      selectedGhostShell.itemInstanceId === this.state.selectedTileItemInstanceId;
+
+    this.setState({
+      selectedTileItemInstanceId: isCurrentlySelectedShell
+        ? null
+        : selectedGhostShell.itemInstanceId
+    });
+
+    this.props.setSelectedShell(isCurrentlySelectedShell ? null : selectedGhostShell);
+  };
+
   render() {
     const { ghostShells, filter } = this.props;
 
@@ -14,7 +31,13 @@ class ShellGrid extends React.Component {
         {ghostShells.length > 0 ? (
           <GridList className={styles.grid}>
             {ghostShells.map(ghostShell => (
-              <ShellGridTile ghostShell={ghostShell} filter={filter} />
+              <ShellGridTile
+                key={ghostShell.itemInstanceId}
+                ghostShell={ghostShell}
+                filter={filter}
+                selected={ghostShell.itemInstanceId === this.state.selectedTileItemInstanceId}
+                onTileClick={this.handleTileClick}
+              />
             ))}
           </GridList>
         ) : (
@@ -32,4 +55,13 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps)(ShellGrid);
+function mapDispatchToProps(dispatch) {
+  return {
+    setSelectedShell: dispatch.destiny.setSelectedShell
+  };
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ShellGrid);

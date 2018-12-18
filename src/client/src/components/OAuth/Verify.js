@@ -2,22 +2,28 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router';
 
-function Verify({ getGhostShellsForCurrentUser }) {
+function Verify({ getOAuthTokenAndGhostShells, apiKey, clientId }) {
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
 
-  getGhostShellsForCurrentUser(code);
+  if (!apiKey || !clientId || !code) return null;
+
+  getOAuthTokenAndGhostShells(code);
 
   return <Redirect to="/" />;
 }
 
+function mapStateToProps({ config: { apiKey, clientId } }) {
+  return { apiKey, clientId };
+}
+
 function mapDispatchToProps(dispatch) {
   return {
-    getGhostShellsForCurrentUser: dispatch.destiny.getGhostShellsForCurrentUser
+    getOAuthTokenAndGhostShells: dispatch.destiny.getOAuthTokenAndGhostShells
   };
 }
 
 export default connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps
 )(Verify);

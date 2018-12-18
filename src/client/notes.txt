@@ -1,14 +1,18 @@
 - be able to equip and show which one is currently equipped
-    - and select which character to equip it to
-- travisCI automatic deployment
-    - I'm sure it can do a yarn build for me and ftp the contents up
+    - can't equip items not in your inventory
+        - have to move them to your inventory THEN equip them...
+    - need to make sure there is space there first
+    - DIM has some weird code when transferring Guardian-to-Guardian that goes to the vault first that I'm not sure about
 
+- filter checkboxes don't appear to come back later
+    I used it to do Crucible, then after it was filtered on Crucible but Crucible wasn't selected
+    
 
 Future
+- travisCI deployment -- there's a timeout that is causing it not to work
 - update readme
 - tooltip isn't great on mobile -- have to long press for 0
 - colors for accordians?
-- rounded corners on icons or icon containers
 - getGhostShellsForCurrentUser is huge and needs refactoring badly
     - vault section in particular is has a ton of loops in it
     - collate some of the calls being made
@@ -18,8 +22,9 @@ Future
 - see about removing "select" action on Service -- it's too wide, even though it's not secret information
 - maybe a little UI around the ghost icon with icons that can be hovered over to say where (Vault, Warlock, etc) and tooltips for the sockets and the categories
 - don't think I need to unzip the manifestDb in order to read the filename -- can get it from the /manifest call
-- can't hover over overlayed cells to see stats
 - tooltip over disabled filters
 - tooltip on refresh button
+- tooltip on disabled equip button
 - have Service return only data I'm actually using
 - highlight shells with uncategorized sockets
+- something about confidential clients getting refresh tokens? how can I do that?
