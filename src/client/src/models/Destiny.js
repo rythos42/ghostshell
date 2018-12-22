@@ -170,8 +170,12 @@ export default {
           );
         }
 
+        const socketData = characters.itemComponents.sockets.data;
+
         const ghostShells = await Promise.all(
           ghostShellData.map(async ghostShell => {
+            const itemSockets = socketData[ghostShell.itemInstanceId].sockets;
+
             const itemDefinition = await ManifestApi.select(
               manifestServiceUrl,
               'DestinyInventoryItemDefinition',
@@ -181,15 +185,7 @@ export default {
             ghostShell.icon = itemDefinition[0].displayProperties.icon;
             ghostShell.description = itemDefinition[0].displayProperties.description;
 
-            const categorizedSockets = await getCategorizedSocketsForItemInstance({
-              membershipId: membership.membershipId,
-              membershipType: membership.membershipType,
-              accessToken: oAuthToken.accessToken,
-              itemInstanceId: ghostShell.itemInstanceId,
-              apiKey,
-              manifestServiceUrl
-            });
-
+            const categorizedSockets = await categorizeSockets({ itemSockets, manifestServiceUrl });
             return createGhostShell(ghostShell, categorizedSockets);
           })
         );
@@ -229,16 +225,9 @@ export default {
 
         const vaultGhostShells = await Promise.all(
           vaultGhostItems.map(async vaultGhostItem => {
-            const vaultGhostItemCategorizedSockets = await getCategorizedSocketsForItemInstance({
-              membershipId: membership.membershipId,
-              membershipType: membership.membershipType,
-              accessToken: oAuthToken.accessToken,
-              itemInstanceId: vaultGhostItem.itemInstanceId,
-              apiKey,
-              manifestServiceUrl
-            });
-
-            return createGhostShell(vaultGhostItem, vaultGhostItemCategorizedSockets);
+            const itemSockets = socketData[vaultGhostItem.itemInstanceId].sockets;
+            const categorizedSockets = await categorizeSockets({ itemSockets, manifestServiceUrl });
+            return createGhostShell(vaultGhostItem, categorizedSockets);
           })
         );
 
@@ -312,22 +301,7 @@ export default {
   })
 };
 
-async function getCategorizedSocketsForItemInstance({
-  membershipId,
-  membershipType,
-  accessToken,
-  itemInstanceId,
-  apiKey,
-  manifestServiceUrl
-}) {
-  const itemSockets = await DestinyApi.getItemSockets({
-    membershipId,
-    membershipType,
-    accessToken,
-    itemInstanceId,
-    apiKey
-  });
-
+async function categorizeSockets({ itemSockets, manifestServiceUrl }) {
   const socketPlugHashes = itemSockets.map(itemSocket => itemSocket.plugHash);
   return await ManifestApi.categorizeSockets(
     manifestServiceUrl,

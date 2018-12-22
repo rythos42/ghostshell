@@ -75,7 +75,8 @@ export async function getMembershipInfo({ destinyMembershipId, accessToken, apiK
 }
 
 export async function getProfileData({ membershipId, membershipType, accessToken, apiKey }) {
-  const components = 'CharacterInventories,CharacterEquipment,ProfileInventories,Characters';
+  const components =
+    'CharacterInventories,CharacterEquipment,ProfileInventories,Characters,ItemSockets';
   const response = await get(
     `/Destiny2/${membershipType}/Profile/${membershipId}/?components=${components}`,
     accessToken,
@@ -83,22 +84,4 @@ export async function getProfileData({ membershipId, membershipType, accessToken
   );
 
   return response.data.Response;
-}
-
-export async function getItemSockets({
-  membershipId,
-  membershipType,
-  itemInstanceId,
-  accessToken,
-  apiKey
-}) {
-  const components = 'ItemSockets';
-  const response = await get(
-    `/Destiny2/${membershipType}/Profile/${membershipId}/Item/${itemInstanceId}/?components=${components}`,
-    accessToken,
-    apiKey
-  );
-
-  const socketData = response.data.Response.sockets.data;
-  return (socketData && socketData.sockets) || [];
 }
