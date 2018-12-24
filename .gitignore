@@ -5,3 +5,13 @@ config.php
 build
 o-ri
 node_modules
+packages
+obj
+bin
+*.user
+.suo
+sqlite3
+
+# destiny specific stuff
+destinymanifest.*
+*.content

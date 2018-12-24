@@ -8,9 +8,6 @@ export default {
     characters: [],
     ghostModTypes: { categorized: {} },
     filter: {},
-    races: [],
-    genders: [],
-    classes: [],
     equipItemResponse: {},
     selectedGhostShell: null
   },
@@ -51,24 +48,6 @@ export default {
       return {
         ...state,
         filter: { ...filter }
-      };
-    },
-    setRaces(state, races) {
-      return {
-        ...state,
-        races: [...races]
-      };
-    },
-    setGenders(state, genders) {
-      return {
-        ...state,
-        genders: [...genders]
-      };
-    },
-    setClasses(state, classes) {
-      return {
-        ...state,
-        classes: [...classes]
       };
     },
     setSelectedShell(state, selectedGhostShell) {
@@ -125,9 +104,14 @@ export default {
           if (!bungieCharacters.hasOwnProperty(characterId)) continue;
 
           const character = bungieCharacters[characterId];
-          const raceString = await dispatch.destiny.getRaceString(character.raceHash);
-          const classString = await dispatch.destiny.getClassString(character.classHash);
-          const genderString = await dispatch.destiny.getGenderString(character.genderHash);
+
+          const raceString = getByHash(state.manifest.races, character.raceHash).displayProperties
+            .name;
+          const classString = getByHash(state.manifest.classes, character.classHash)
+            .displayProperties.name;
+          const genderString = getByHash(state.manifest.genders, character.genderHash)
+            .displayProperties.name;
+
           characterDescriptions[
             characterId
           ] = `${classString.toUpperCase()} ${raceString} ${genderString}`;
@@ -144,53 +128,30 @@ export default {
         dispatch.destiny.setCharacters(characterData);
 
         let ghostShellData = [];
-        const characterInventory = characters.characterInventories.data;
-        for (let characterId in characterInventory) {
-          if (!characterInventory.hasOwnProperty(characterId)) continue;
-          ghostShellData = ghostShellData.concat(
-            getItemsFromBucket(
-              characterInventory[characterId].items,
-              4023194814,
-              characterId,
-              characterDescriptions[characterId]
-            )
-          );
-        }
-
-        const characterEquipment = characters.characterEquipment.data;
-        for (let characterId in characterEquipment) {
-          if (!characterEquipment.hasOwnProperty(characterId)) continue;
-          ghostShellData = ghostShellData.concat(
-            getItemsFromBucket(
-              characterEquipment[characterId].items,
-              4023194814,
-              characterId,
-              characterDescriptions[characterId]
-            )
-          );
+        const types = ['characterInventories', 'characterEquipment'];
+        for (let inventoryTypeIndex = 0; inventoryTypeIndex < types.length; inventoryTypeIndex++) {
+          const characterInventory = characters[types[inventoryTypeIndex]].data;
+          for (let characterId in characterInventory) {
+            if (!characterInventory.hasOwnProperty(characterId)) continue;
+            ghostShellData = ghostShellData.concat(
+              getItemsFromBucket(
+                characterInventory[characterId].items,
+                4023194814,
+                characterId,
+                characterDescriptions[characterId]
+              )
+            );
+          }
         }
 
         const socketData = characters.itemComponents.sockets.data;
+        const ghostShells = await getGhostShellsFromItems({
+          items: ghostShellData,
+          inventory: state.manifest.inventory,
+          socketData,
+          manifestServiceUrl
+        });
 
-        const ghostShells = await Promise.all(
-          ghostShellData.map(async ghostShell => {
-            const itemSockets = socketData[ghostShell.itemInstanceId].sockets;
-
-            const itemDefinition = await ManifestApi.select(
-              manifestServiceUrl,
-              'DestinyInventoryItemDefinition',
-              ghostShell.itemHash
-            );
-            ghostShell.name = itemDefinition[0].displayProperties.name;
-            ghostShell.icon = itemDefinition[0].displayProperties.icon;
-            ghostShell.description = itemDefinition[0].displayProperties.description;
-
-            const categorizedSockets = await categorizeSockets({ itemSockets, manifestServiceUrl });
-            return createGhostShell(ghostShell, categorizedSockets);
-          })
-        );
-
-        // this section is currently really inefficient...
         const vaultItems = getItemsFromBucket(
           characters.profileInventory.data.items,
           138197802,
@@ -198,38 +159,12 @@ export default {
           'Vault'
         );
 
-        const vaultShellsData = await ManifestApi.getGhostShellsFromVault({
-          manifestServiceUrl,
-          vaultItems
+        const vaultGhostShells = await getGhostShellsFromItems({
+          items: vaultItems,
+          inventory: state.manifest.inventory,
+          socketData,
+          manifestServiceUrl
         });
-
-        function isItemGhostShell(vaultShellsData, vaultItem) {
-          return vaultShellsData.find(vaultShell => {
-            return vaultShell.hash === vaultItem.itemHash;
-          });
-        }
-
-        const vaultGhostItems = vaultItems
-          .filter(vaultItem => isItemGhostShell(vaultShellsData, vaultItem))
-          .map(vaultGhostItem => {
-            const vaultShellData = vaultShellsData.find(vaultShell => {
-              return vaultShell.hash === vaultGhostItem.itemHash;
-            });
-            return {
-              ...vaultGhostItem,
-              name: vaultShellData.displayProperties.name,
-              icon: vaultShellData.displayProperties.icon,
-              description: vaultShellData.displayProperties.description
-            };
-          });
-
-        const vaultGhostShells = await Promise.all(
-          vaultGhostItems.map(async vaultGhostItem => {
-            const itemSockets = socketData[vaultGhostItem.itemInstanceId].sockets;
-            const categorizedSockets = await categorizeSockets({ itemSockets, manifestServiceUrl });
-            return createGhostShell(vaultGhostItem, categorizedSockets);
-          })
-        );
 
         dispatch.destiny.addGhostShells(ghostShells.concat(vaultGhostShells));
         dispatch.destiny.setHasSignedIn();
@@ -258,28 +193,6 @@ export default {
       const oAuthToken = getObject('oAuthToken');
       if (oAuthToken) dispatch.destiny.setOAuthToken(oAuthToken);
     },
-    async getRaceGenderClassData(arg, state) {
-      const { races, genders, classes } = await ManifestApi.getRaceGenderClassData(
-        state.config.manifestServiceUrl
-      );
-      dispatch.destiny.setRaces(races);
-      dispatch.destiny.setGenders(genders);
-      dispatch.destiny.setClasses(classes);
-    },
-    getRaceString(raceHash, state) {
-      const race = state.destiny.races.find(race => race.hash === raceHash);
-      return race.displayProperties.name;
-    },
-    getClassString(classHash, state) {
-      const destinyClass = state.destiny.classes.find(
-        destinyClass => destinyClass.hash === classHash
-      );
-      return destinyClass.displayProperties.name;
-    },
-    getGenderString(genderHash, state) {
-      const gender = state.destiny.genders.find(gender => gender.hash === genderHash);
-      return gender.displayProperties.name;
-    },
     async equipSelectedShellToCharacter({ characterId, membershipType }, state) {
       const selectedGhostShell = state.destiny.selectedGhostShell;
       const accessToken = state.destiny.oAuthToken.accessToken;
@@ -301,14 +214,6 @@ export default {
   })
 };
 
-async function categorizeSockets({ itemSockets, manifestServiceUrl }) {
-  const socketPlugHashes = itemSockets.map(itemSocket => itemSocket.plugHash);
-  return await ManifestApi.categorizeSockets(
-    manifestServiceUrl,
-    socketPlugHashes.filter(socketPlugHash => socketPlugHash != null)
-  );
-}
-
 function getItemsFromBucket(bucket, bucketHash, location, locationString) {
   const array = [];
   for (let itemIndex = 0; itemIndex < bucket.length; itemIndex++) {
@@ -325,13 +230,36 @@ function getItemsFromBucket(bucket, bucketHash, location, locationString) {
   return array;
 }
 
-function createGhostShell(ghostShell, sockets) {
-  return {
-    itemInstanceId: ghostShell.itemInstanceId,
-    name: ghostShell.name,
-    icon: `https://www.bungie.net${ghostShell.icon}`,
-    sockets: sockets,
-    location: ghostShell.location,
-    locationString: ghostShell.locationString
-  };
+function getByHash(array, hash) {
+  return array[hash] || array[hash - 4294967296];
+}
+
+async function getGhostShellsFromItems({ items, inventory, socketData, manifestServiceUrl }) {
+  const ghostShells = await Promise.all(
+    items.map(async ghostShell => {
+      const itemDefinition = getByHash(inventory, ghostShell.itemHash);
+      if (!itemDefinition) return null;
+      ghostShell.name = itemDefinition.displayProperties.name;
+      ghostShell.icon = itemDefinition.displayProperties.icon;
+      ghostShell.description = itemDefinition.displayProperties.description;
+
+      const socketPlugHashes = socketData[ghostShell.itemInstanceId].sockets
+        .map(itemSocket => itemSocket.plugHash)
+        .filter(socketPlugHash => socketPlugHash != null);
+      const categorizedSockets = await ManifestApi.categorizeSockets(
+        manifestServiceUrl,
+        socketPlugHashes
+      );
+
+      return {
+        itemInstanceId: ghostShell.itemInstanceId,
+        name: ghostShell.name,
+        icon: `https://www.bungie.net${ghostShell.icon}`,
+        sockets: categorizedSockets,
+        location: ghostShell.location,
+        locationString: ghostShell.locationString
+      };
+    })
+  );
+  return ghostShells.filter(vaultGhostItem => vaultGhostItem);
 }

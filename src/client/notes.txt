@@ -1,3 +1,8 @@
+- downloading the manifest content I need into a JSON file and loading that locally, rather than the PHP server
+    - move categorization stuff from server to client
+    - need to break cache in some way
+
+
 - instead of checking access token expiry, check what result we get when it doesn't work and report that
     - it gives a 401 if no access token
 - if equip fails because the user isn't in the right spot, do a transfer to inventory instead and report that
@@ -15,12 +20,10 @@
 - separate "get access token" and "refresh shell data"
 - make "refresh shell data" faster then see if we need to separate "get access token" and "refresh"
 
-
+Bugs
 - filter checkboxes don't appear to come back later
     I used it to do Crucible, then after it was filtered on Crucible but Crucible wasn't selected
-- consider downloading the manifest content I need into a JSON file and loading that locally, rather than the PHP server
-
-
+- check for a race condition on loading gender/race/class and using it in the refresh
 
 
 Future

@@ -6,9 +6,8 @@ class Initialize extends React.Component {
   async componentDidMount() {
     this.props.initializeDestiny();
     this.props.initializeStrings();
-
-    await this.props.initializeConfig();
-    this.props.getRaceGenderClassData();
+    await this.props.initializeManifest();
+    this.props.initializeConfig();
   }
 
   render() {
@@ -21,7 +20,7 @@ function mapDispatchToProps(dispatch) {
     initializeConfig: dispatch.config.initialize,
     initializeStrings: dispatch.strings.initialize,
     initializeDestiny: dispatch.destiny.initialize,
-    getRaceGenderClassData: dispatch.destiny.getRaceGenderClassData
+    initializeManifest: dispatch.manifest.initialize
   };
 }
 
