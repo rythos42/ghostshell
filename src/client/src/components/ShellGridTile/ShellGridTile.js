@@ -38,12 +38,11 @@ class ShellGridTile extends React.Component {
     if (ghostShell.sockets.length === 0) return true;
 
     for (let i = 0; i < filterKeys.length; i++) {
-      const filterModType = parseInt(filterKeys[i], 10);
       let filterMatched = false;
 
       ghostShell.sockets.forEach(socket => {
         socket.ghostModTypes.forEach(socketedModType => {
-          if (socketedModType === filterModType) filterMatched = true;
+          if (socketedModType === filterKeys[i]) filterMatched = true;
         });
       });
 

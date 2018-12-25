@@ -1,14 +1,16 @@
 import * as DestinyApi from '../api/DestinyApi';
-import * as ManifestApi from '../api/ManifestApi';
+
+export const EquipItemErrorCodes = {
+  AccessTokenExpired: 'AccessTokenExpired'
+};
 
 export default {
   state: {
     oAuthToken: {},
     ghostShells: [],
     characters: [],
-    ghostModTypes: { categorized: {} },
     filter: {},
-    equipItemResponse: {},
+    equipItemResponse: { bungieResponse: {} },
     selectedGhostShell: null
   },
   reducers: {
@@ -24,12 +26,6 @@ export default {
       return {
         ...state,
         characters
-      };
-    },
-    setAllGhostModTypes(state, ghostModTypes) {
-      return {
-        ...state,
-        ghostModTypes
       };
     },
     setHasSignedIn(state) {
@@ -149,7 +145,7 @@ export default {
           items: ghostShellData,
           inventory: state.manifest.inventory,
           socketData,
-          manifestServiceUrl
+          dispatch
         });
 
         const vaultItems = getItemsFromBucket(
@@ -163,17 +159,13 @@ export default {
           items: vaultItems,
           inventory: state.manifest.inventory,
           socketData,
-          manifestServiceUrl
+          dispatch
         });
 
         dispatch.destiny.addGhostShells(ghostShells.concat(vaultGhostShells));
         dispatch.destiny.setHasSignedIn();
         dispatch.destiny.setIsLoading(false);
       });
-    },
-    async getAllGhostModTypes(arg, state) {
-      const ghostModTypes = await ManifestApi.getAllGhostModTypes(state.config.manifestServiceUrl);
-      dispatch.destiny.setAllGhostModTypes(ghostModTypes);
     },
     initialize() {
       function getObject(key) {
@@ -198,18 +190,25 @@ export default {
       const accessToken = state.destiny.oAuthToken.accessToken;
       const apiKey = state.config.apiKey;
 
-      const response = await DestinyApi.equipItem({
-        characterId,
-        membershipType,
-        accessToken,
-        apiKey,
-        itemId: selectedGhostShell.itemInstanceId
-      });
+      try {
+        const response = await DestinyApi.equipItem({
+          characterId,
+          membershipType,
+          accessToken,
+          apiKey,
+          itemId: selectedGhostShell.itemInstanceId
+        });
 
-      dispatch.destiny.setEquipItemResponse(response);
+        dispatch.destiny.setEquipItemResponse({ bungieResponse: response });
+      } catch (e) {
+        dispatch.destiny.setEquipItemResponse({
+          bungieResponse: {},
+          error: EquipItemErrorCodes.AccessTokenExpired
+        });
+      }
     },
     resetEquipItemResponse() {
-      dispatch.destiny.setEquipItemResponse({});
+      dispatch.destiny.setEquipItemResponse({ bungieResponse: {} });
     }
   })
 };
@@ -234,7 +233,7 @@ function getByHash(array, hash) {
   return array[hash] || array[hash - 4294967296];
 }
 
-async function getGhostShellsFromItems({ items, inventory, socketData, manifestServiceUrl }) {
+async function getGhostShellsFromItems({ items, inventory, socketData, dispatch }) {
   const ghostShells = await Promise.all(
     items.map(async ghostShell => {
       const itemDefinition = getByHash(inventory, ghostShell.itemHash);
@@ -246,10 +245,8 @@ async function getGhostShellsFromItems({ items, inventory, socketData, manifestS
       const socketPlugHashes = socketData[ghostShell.itemInstanceId].sockets
         .map(itemSocket => itemSocket.plugHash)
         .filter(socketPlugHash => socketPlugHash != null);
-      const categorizedSockets = await ManifestApi.categorizeSockets(
-        manifestServiceUrl,
-        socketPlugHashes
-      );
+
+      const categorizedSockets = await dispatch.ghostModTypes.categorizeSockets(socketPlugHashes);
 
       return {
         itemInstanceId: ghostShell.itemInstanceId,

@@ -44,10 +44,8 @@ class Drawer extends React.Component {
   };
 
   getStringForEnum = enumValue => {
-    const enumString = this.props.ghostModTypes[enumValue];
-
-    const resourceString = this.props.enumStrings[enumString];
-    return resourceString ? resourceString : enumString;
+    const resourceString = this.props.enumStrings[enumValue];
+    return resourceString ? resourceString : enumValue;
   };
 
   getStringForCategory = categoryKey => {
@@ -69,7 +67,7 @@ class Drawer extends React.Component {
           </Toolbar>
         </AppBar>
 
-        {Object.keys(this.props.ghostModTypes.categorized).map(key => (
+        {Object.keys(this.props.ghostModTypeCategories).map(key => (
           <ExpansionPanel key={key}>
             <ExpansionPanelSummary
               expandIcon={<ExpandMoreIcon />}
@@ -83,7 +81,7 @@ class Drawer extends React.Component {
             </ExpansionPanelSummary>
             <ExpansionPanelDetails classes={{ root: styles.expansionPanelDetails }}>
               <List>
-                {this.props.ghostModTypes.categorized[key].map(modType => (
+                {this.props.ghostModTypeCategories[key].map(modType => (
                   <ListItem key={modType} className={styles.listItem}>
                     <FormControlLabel
                       control={
@@ -128,7 +126,7 @@ class Drawer extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    ghostModTypes: state.destiny.ghostModTypes,
+    ghostModTypeCategories: state.ghostModTypes.categories,
     hasSignedIn: state.destiny.hasSignedIn,
     enumStrings: state.strings.enums,
     categoryStrings: state.strings.categories

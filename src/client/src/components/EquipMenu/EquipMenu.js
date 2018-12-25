@@ -11,12 +11,13 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 
 import styles from './EquipMenu.module.css';
+import { EquipItemErrorCodes } from './../../models/Destiny';
 
 class EquipMenu extends React.Component {
   state = {
     anchorElement: null,
     snackBarOpen: false,
-    dialogOpen: false,
+    accessTokenExpiredDialogOpen: false,
     noEquipDialogOpen: false
   };
 
@@ -31,6 +32,9 @@ class EquipMenu extends React.Component {
 
     if (prevProps.equipItemMessage && !this.props.equipItemMessage)
       this.setState({ snackBarOpen: false });
+
+    if (this.props.accessTokenExpired && !prevProps.accessTokenExpired)
+      this.setState({ accessTokenExpiredDialogOpen: true });
   }
 
   handleSnackbarClose = () => {
@@ -46,12 +50,6 @@ class EquipMenu extends React.Component {
   };
 
   handleCharacterClick = (characterId, membershipType) => () => {
-    const expired = new Date() - this.props.oAuthToken.retrievedAt > 1000 * 60 * 60;
-    if (expired) {
-      this.setState({ dialogOpen: true });
-      return;
-    }
-
     if (this.props.selectedGhostShell.location !== characterId) {
       this.setState({ noEquipDialogOpen: true });
       return;
@@ -61,8 +59,9 @@ class EquipMenu extends React.Component {
     this.setState({ anchorElement: null });
   };
 
-  handleDialogClose = () => {
-    this.setState({ dialogOpen: false });
+  handleAccessTokenExpiredDialogClose = () => {
+    this.setState({ accessTokenExpiredDialogOpen: false });
+    this.props.resetEquipItemResponse();
   };
 
   handleNoEquipDialogClose = () => {
@@ -115,8 +114,8 @@ class EquipMenu extends React.Component {
           message={this.props.equipItemMessage}
         />
         <Dialog
-          open={this.state.dialogOpen}
-          onClose={this.handleDialogClose}
+          open={this.state.accessTokenExpiredDialogOpen}
+          onClose={this.handleAccessTokenExpiredDialogClose}
           aria-labelledby="access-expired-title"
           aria-describedby="access-expired-description"
         >
@@ -128,7 +127,7 @@ class EquipMenu extends React.Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleDialogClose} color="primary" autoFocus>
+            <Button onClick={this.handleAccessTokenExpiredDialogClose} color="primary" autoFocus>
               Ok
             </Button>
           </DialogActions>
@@ -158,16 +157,17 @@ class EquipMenu extends React.Component {
   }
 }
 
-function mapStateToProps(state) {
+function mapStateToProps({ destiny }) {
   return {
-    characters: state.destiny.characters,
+    characters: destiny.characters,
     equipItemMessage:
-      state.destiny.equipItemResponse.ErrorCode === 1
+      destiny.equipItemResponse.bungieResponse.ErrorCode === 1
         ? 'Equipped'
-        : state.destiny.equipItemResponse.Message,
-    oAuthToken: state.destiny.oAuthToken,
-    hasShellSelected: state.destiny.selectedGhostShell !== null,
-    selectedGhostShell: state.destiny.selectedGhostShell
+        : destiny.equipItemResponse.bungieResponse.Message,
+    oAuthToken: destiny.oAuthToken,
+    hasShellSelected: destiny.selectedGhostShell !== null,
+    selectedGhostShell: destiny.selectedGhostShell,
+    accessTokenExpired: destiny.equipItemResponse.error === EquipItemErrorCodes.AccessTokenExpired
   };
 }
 

@@ -1,10 +1,3 @@
-- downloading the manifest content I need into a JSON file and loading that locally, rather than the PHP server
-    - move categorization stuff from server to client
-    - need to break cache in some way
-
-
-- instead of checking access token expiry, check what result we get when it doesn't work and report that
-    - it gives a 401 if no access token
 - if equip fails because the user isn't in the right spot, do a transfer to inventory instead and report that
 - "transfer from vault" involves checking how much inventory space user has (the last time we checked)
     - if <9 shells, a-ok
@@ -27,22 +20,16 @@ Bugs
 
 
 Future
+- destinymanifest.json needs some cache management for when it is refreshed
 - travisCI deployment -- there's a timeout that is causing it not to work
 - update readme
 - tooltip isn't great on mobile -- have to long press for 0
 - colors for accordians?
-- getGhostShellsForCurrentUser is huge and needs refactoring badly
-    - vault section in particular is has a ton of loops in it
-    - collate some of the calls being made
-    - that login is NOT fast
-- get rid of the spaces at the front of GhostModTypes::GhostModTypeMappings and do a proper regex
-- better ACAO
-- see about removing "select" action on Service -- it's too wide, even though it's not secret information
+- do a proper regex in GhostModTypes.js
 - maybe a little UI around the ghost icon with icons that can be hovered over to say where (Vault, Warlock, etc) and tooltips for the sockets and the categories
-- don't think I need to unzip the manifestDb in order to read the filename -- can get it from the /manifest call
 - tooltip over disabled filters
 - tooltip on refresh button
 - tooltip on disabled equip button
-- have Service return only data I'm actually using
 - highlight shells with uncategorized sockets
 - something about confidential clients getting refresh tokens? how can I do that?
+- put character state into a character model

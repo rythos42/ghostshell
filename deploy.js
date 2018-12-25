@@ -18,19 +18,5 @@ ftpDeploy
   .deploy(config)
   .then(res => {
     console.log("Finished client");
-    console.log("Deploying server");
-    config.localRoot = __dirname + "/src/server";
-    config.remoteRoot = "/public_html/ghostshell/srv";
-    config.exclude = [
-      "vendor/**/*.*",
-      "config.php",
-      "composer.json",
-      "composer.lock"
-    ];
-
-    ftpDeploy
-      .deploy(config)
-      .then(res => console.log("Finished server"))
-      .catch(err => console.log(err));
   })
   .catch(err => console.log(err));
