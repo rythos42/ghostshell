@@ -3,7 +3,6 @@ import axios from 'axios';
 export default {
   state: {
     apiKey: '',
-    manifestServiceUrl: '',
     clientId: ''
   },
   reducers: {
@@ -28,7 +27,6 @@ function createConfig(configData, state) {
   return {
     ...state,
     apiKey: configData.bungieApiKey,
-    clientId: configData.bungieClientId,
-    manifestServiceUrl: configData.manifestServiceUrl
+    clientId: configData.bungieClientId
   };
 }

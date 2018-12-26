@@ -79,7 +79,6 @@ export default {
     async getGhostShellsForCurrentUser(args, state) {
       dispatch.destiny.setIsLoading(true);
 
-      const manifestServiceUrl = state.config.manifestServiceUrl;
       const oAuthToken = state.destiny.oAuthToken;
       const apiKey = oAuthToken.apiKey;
       const membershipInfo = await DestinyApi.getMembershipInfo(oAuthToken);
@@ -101,12 +100,9 @@ export default {
 
           const character = bungieCharacters[characterId];
 
-          const raceString = getByHash(state.manifest.races, character.raceHash).displayProperties
-            .name;
-          const classString = getByHash(state.manifest.classes, character.classHash)
-            .displayProperties.name;
-          const genderString = getByHash(state.manifest.genders, character.genderHash)
-            .displayProperties.name;
+          const raceString = getName(state.manifest.races, character.raceHash);
+          const classString = getName(state.manifest.classes, character.classHash);
+          const genderString = getName(state.manifest.genders, character.genderHash);
 
           characterDescriptions[
             characterId
@@ -227,6 +223,10 @@ function getItemsFromBucket(bucket, bucketHash, location, locationString) {
     }
   }
   return array;
+}
+
+function getName(array, hash) {
+  return getByHash(array, hash).displayProperties.name;
 }
 
 function getByHash(array, hash) {
