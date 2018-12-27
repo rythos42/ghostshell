@@ -14,6 +14,7 @@ class ShellGridTile extends React.Component {
         </Typography>
         <Typography color="inherit" variant="subtitle2" gutterBottom>
           {ghostShell.locationString}
+          {ghostShell.isEquipped && ' - Equipped'}
         </Typography>
         {ghostShell.sockets.map(socket => (
           <div key={socket.hash}>

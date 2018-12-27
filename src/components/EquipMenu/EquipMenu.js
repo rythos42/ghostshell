@@ -11,13 +11,11 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 
 import styles from './EquipMenu.module.css';
-import { EquipItemErrorCodes } from './../../models/Destiny';
 
 class EquipMenu extends React.Component {
   state = {
     anchorElement: null,
     snackBarOpen: false,
-    accessTokenExpiredDialogOpen: false,
     noEquipDialogOpen: false
   };
 
@@ -32,13 +30,10 @@ class EquipMenu extends React.Component {
 
     if (prevProps.equipItemMessage && !this.props.equipItemMessage)
       this.setState({ snackBarOpen: false });
-
-    if (this.props.accessTokenExpired && !prevProps.accessTokenExpired)
-      this.setState({ accessTokenExpiredDialogOpen: true });
   }
 
   handleSnackbarClose = () => {
-    this.props.resetEquipItemResponse();
+    this.props.resetApiResponseToUser();
   };
 
   handleOpenMenu = event => {
@@ -50,18 +45,14 @@ class EquipMenu extends React.Component {
   };
 
   handleCharacterClick = (characterId, membershipType) => () => {
-    if (this.props.selectedGhostShell.location !== characterId) {
+    const { location } = this.props.selectedGhostShell;
+    if (location !== characterId && location !== 'vault') {
       this.setState({ noEquipDialogOpen: true });
       return;
     }
 
     this.props.equipSelectedShellToCharacter({ characterId, membershipType });
     this.setState({ anchorElement: null });
-  };
-
-  handleAccessTokenExpiredDialogClose = () => {
-    this.setState({ accessTokenExpiredDialogOpen: false });
-    this.props.resetEquipItemResponse();
   };
 
   handleNoEquipDialogClose = () => {
@@ -114,25 +105,6 @@ class EquipMenu extends React.Component {
           message={this.props.equipItemMessage}
         />
         <Dialog
-          open={this.state.accessTokenExpiredDialogOpen}
-          onClose={this.handleAccessTokenExpiredDialogClose}
-          aria-labelledby="access-expired-title"
-          aria-describedby="access-expired-description"
-        >
-          <DialogTitle id="access-expired-title">Access Expired</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="access-expired-description">
-              Your access to Bungie through this app has expired and must be refreshed before you
-              can equip.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.handleAccessTokenExpiredDialogClose} color="primary" autoFocus>
-              Ok
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog
           open={this.state.noEquipDialogOpen}
           onClose={this.handleNoEquipDialogClose}
           aria-labelledby="no-equip-title"
@@ -142,8 +114,7 @@ class EquipMenu extends React.Component {
           <DialogContent>
             <DialogContentText id="no-equip-description">
               You cannot equip this to that character at this time. Unfortunately, to equip from
-              vault or another character there's a lot that needs to happen so this is a middle
-              step.
+              another character there's a lot that needs to happen so this is a middle step.
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -160,21 +131,18 @@ class EquipMenu extends React.Component {
 function mapStateToProps({ destiny }) {
   return {
     characters: destiny.characters,
-    equipItemMessage:
-      destiny.equipItemResponse.bungieResponse.ErrorCode === 1
-        ? 'Equipped'
-        : destiny.equipItemResponse.bungieResponse.Message,
-    oAuthToken: destiny.oAuthToken,
+    equipItemMessage: destiny.apiResponse.message
+      ? destiny.apiResponse.message
+      : destiny.apiResponse.bungieResponse.Message,
     hasShellSelected: destiny.selectedGhostShell !== null,
-    selectedGhostShell: destiny.selectedGhostShell,
-    accessTokenExpired: destiny.equipItemResponse.error === EquipItemErrorCodes.AccessTokenExpired
+    selectedGhostShell: destiny.selectedGhostShell
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
     equipSelectedShellToCharacter: dispatch.destiny.equipSelectedShellToCharacter,
-    resetEquipItemResponse: dispatch.destiny.resetEquipItemResponse
+    resetApiResponseToUser: dispatch.destiny.resetApiResponseToUser
   };
 }
 

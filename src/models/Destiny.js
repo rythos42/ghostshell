@@ -1,17 +1,13 @@
-import * as DestinyApi from '../api/DestinyApi';
-
-export const EquipItemErrorCodes = {
-  AccessTokenExpired: 'AccessTokenExpired'
-};
+import { default as DestinyApi, BungieCodes } from '../api/DestinyApi';
 
 export default {
   state: {
-    oAuthToken: {},
     ghostShells: [],
     characters: [],
     filter: {},
-    equipItemResponse: { bungieResponse: {} },
-    selectedGhostShell: null
+    apiResponse: { bungieResponse: {}, message: '' },
+    selectedGhostShell: null,
+    destinyApi: null
   },
   reducers: {
     addGhostShells(state, ghostShells) {
@@ -52,44 +48,59 @@ export default {
         selectedGhostShell: selectedGhostShell
       };
     },
-    setOAuthToken(state, oAuthToken) {
-      global.localStorage.setItem('oAuthToken', JSON.stringify(oAuthToken));
+    setApiResponseToUser(state, apiResponse) {
       return {
         ...state,
-        oAuthToken: oAuthToken
+        apiResponse
       };
     },
-    setEquipItemResponse(state, equipItemResponse) {
+    setDestinyApi(state, destinyApi) {
+      global.localStorage.setItem('destinyApi', JSON.stringify(destinyApi));
       return {
         ...state,
-        equipItemResponse
+        destinyApi
+      };
+    },
+    setEquipped(state, itemInstanceId) {
+      return {
+        ...state,
+        ghostShells: state.ghostShells.map(ghostShell => ({
+          ...ghostShell,
+          isEquipped: ghostShell.itemInstanceId === itemInstanceId
+        }))
+      };
+    },
+    setLocation(state, { itemInstanceId, location, locationString }) {
+      return {
+        ...state,
+        ghostShells: state.ghostShells.map(ghostShell => ({
+          ...ghostShell,
+          location: ghostShell.itemInstanceId === itemInstanceId ? location : ghostShell.location,
+          locationString:
+            ghostShell.itemInstanceId === itemInstanceId
+              ? locationString
+              : ghostShell.locationString
+        }))
       };
     }
   },
   effects: dispatch => ({
-    async getOAuthTokenAndGhostShells(code) {
-      await dispatch.destiny.getOAuthToken(code);
-      await dispatch.destiny.getGhostShellsForCurrentUser();
-    },
-    async getOAuthToken(code, state) {
-      const { apiKey, clientId } = state.config;
-      const oAuthToken = await DestinyApi.getOAuthToken({ code, apiKey, clientId });
-      dispatch.destiny.setOAuthToken(oAuthToken);
-    },
-    async getGhostShellsForCurrentUser(args, state) {
+    async getOAuthTokenAndGhostShells(code, state) {
       dispatch.destiny.setIsLoading(true);
 
-      const oAuthToken = state.destiny.oAuthToken;
-      const apiKey = oAuthToken.apiKey;
-      const membershipInfo = await DestinyApi.getMembershipInfo(oAuthToken);
+      const destinyApi = new DestinyApi(state.config.apiKey);
+      const oAuthToken = await destinyApi.getOAuthToken({ code, clientId: state.config.clientId });
+      destinyApi.setAccessToken(oAuthToken.accessToken);
+      destinyApi.setDestinyMembershipId(oAuthToken.destinyMembershipId);
+      await dispatch.destiny.setDestinyApi(destinyApi);
+
+      const membershipInfo = await destinyApi.getMembershipInfo();
       const memberships = membershipInfo.destinyMemberships;
 
       memberships.forEach(async membership => {
-        const characters = await DestinyApi.getProfileData({
+        const characters = await destinyApi.getProfileData({
           membershipId: membership.membershipId,
-          membershipType: membership.membershipType,
-          accessToken: oAuthToken.accessToken,
-          apiKey: apiKey
+          membershipType: membership.membershipType
         });
 
         const characterData = [];
@@ -104,9 +115,8 @@ export default {
           const classString = getName(state.manifest.classes, character.classHash);
           const genderString = getName(state.manifest.genders, character.genderHash);
 
-          characterDescriptions[
-            characterId
-          ] = `${classString.toUpperCase()} ${raceString} ${genderString}`;
+          const locationString = `${classString.toUpperCase()} ${raceString} ${genderString}`;
+          characterDescriptions[characterId] = locationString;
 
           characterData.push({
             characterId: characterId,
@@ -114,7 +124,8 @@ export default {
             membershipType: membership.membershipType,
             raceString: raceString,
             classString: classString,
-            genderString: genderString
+            genderString: genderString,
+            locationString: locationString
           });
         }
         dispatch.destiny.setCharacters(characterData);
@@ -122,16 +133,19 @@ export default {
         let ghostShellData = [];
         const types = ['characterInventories', 'characterEquipment'];
         for (let inventoryTypeIndex = 0; inventoryTypeIndex < types.length; inventoryTypeIndex++) {
-          const characterInventory = characters[types[inventoryTypeIndex]].data;
+          const inventoryType = types[inventoryTypeIndex];
+          const characterInventory = characters[inventoryType].data;
           for (let characterId in characterInventory) {
             if (!characterInventory.hasOwnProperty(characterId)) continue;
+
             ghostShellData = ghostShellData.concat(
-              getItemsFromBucket(
-                characterInventory[characterId].items,
-                4023194814,
-                characterId,
-                characterDescriptions[characterId]
-              )
+              getItemsFromBucket({
+                bucket: characterInventory[characterId].items,
+                bucketHash: 4023194814,
+                location: characterId,
+                locationString: characterDescriptions[characterId],
+                isEquipped: inventoryType === 'characterEquipment'
+              })
             );
           }
         }
@@ -144,12 +158,13 @@ export default {
           dispatch
         });
 
-        const vaultItems = getItemsFromBucket(
-          characters.profileInventory.data.items,
-          138197802,
-          'vault',
-          'Vault'
-        );
+        const vaultItems = getItemsFromBucket({
+          bucket: characters.profileInventory.data.items,
+          bucketHash: 138197802,
+          location: 'vault',
+          locationString: 'Vault',
+          isEquipped: false
+        });
 
         const vaultGhostShells = await getGhostShellsFromItems({
           items: vaultItems,
@@ -178,38 +193,103 @@ export default {
       const characters = getObject('characters');
       if (characters) dispatch.destiny.setCharacters(characters);
 
-      const oAuthToken = getObject('oAuthToken');
-      if (oAuthToken) dispatch.destiny.setOAuthToken(oAuthToken);
+      const destinyApi = getObject('destinyApi');
+      if (destinyApi) dispatch.destiny.setDestinyApi(new DestinyApi(destinyApi));
     },
     async equipSelectedShellToCharacter({ characterId, membershipType }, state) {
-      const selectedGhostShell = state.destiny.selectedGhostShell;
-      const accessToken = state.destiny.oAuthToken.accessToken;
-      const apiKey = state.config.apiKey;
+      const { selectedGhostShell, destinyApi } = state.destiny;
+      let response = {};
+      const equipItem = destinyApi.createEquipItem({ characterId, membershipType });
 
       try {
-        const response = await DestinyApi.equipItem({
-          characterId,
-          membershipType,
-          accessToken,
-          apiKey,
-          itemId: selectedGhostShell.itemInstanceId
-        });
-
-        dispatch.destiny.setEquipItemResponse({ bungieResponse: response });
+        response = await equipItem(selectedGhostShell);
       } catch (e) {
-        dispatch.destiny.setEquipItemResponse({
+        dispatch.destiny.setApiResponseToUser({
           bungieResponse: {},
-          error: EquipItemErrorCodes.AccessTokenExpired
+          message:
+            'Your access to Bungie through this app has expired and must be refreshed before you can equip.'
         });
+        return;
       }
+
+      // not on character to equip
+      if (response.ErrorCode === BungieCodes.ItemNotFound) {
+        const success = await dispatch.destiny.transferTo({ characterId, membershipType });
+        if (success) response = await equipItem(selectedGhostShell);
+      }
+      if (response.ErrorCode === BungieCodes.Success)
+        dispatch.destiny.setEquipped(selectedGhostShell.itemInstanceId);
+
+      dispatch.destiny.setApiResponseToUser({
+        bungieResponse: response,
+        message: response.ErrorCode === BungieCodes.Success ? 'Equipped' : response.Message
+      });
     },
-    resetEquipItemResponse() {
-      dispatch.destiny.setEquipItemResponse({ bungieResponse: {} });
+    resetApiResponseToUser() {
+      dispatch.destiny.setApiResponseToUser({ bungieResponse: {}, message: '' });
+    },
+    async transferTo({ characterId, membershipType }, state) {
+      const { selectedGhostShell, destinyApi } = state.destiny;
+      const transferItem = destinyApi.createTransferItem({ characterId, membershipType });
+      const response = await transferItem({ shell: selectedGhostShell, toVault: false });
+      const character = state.destiny.characters.find(
+        character => character.characterId === characterId
+      );
+
+      switch (response.ErrorCode) {
+        case BungieCodes.Success:
+          selectedGhostShell.location = characterId;
+          selectedGhostShell.locationString = character.locationString;
+          return true;
+
+        case BungieCodes.NoRoomInDestination:
+          // can't transfer to character -- transfer a non-equipped shell from character to vault then try again
+          const nonEquippedShell = state.destiny.ghostShells.find(
+            ghostShell => ghostShell.location === characterId && !ghostShell.isEquipped
+          );
+
+          const respToVault = await transferItem({ shell: nonEquippedShell, toVault: true });
+          if (respToVault.ErrorCode !== BungieCodes.Success) {
+            dispatch.destiny.setApiResponseToUser({
+              bungieResponse: respToVault,
+              message:
+                'Could not transfer from character to vault to make space to transfer to character.'
+            });
+            return false;
+          }
+          dispatch.destiny.setLocation({
+            itemInstanceId: nonEquippedShell.itemInstanceId,
+            location: 'vault',
+            locationString: 'Vault'
+          });
+
+          // try the transfer again
+          const respToCharacter = await transferItem({ shell: selectedGhostShell, toVault: false });
+          if (respToCharacter.ErrorCode !== BungieCodes.Success) {
+            dispatch.destiny.setApiResponseToUser({ bungieResponse: respToCharacter });
+            return false;
+          }
+
+          dispatch.destiny.setLocation({
+            itemInstanceId: selectedGhostShell.itemInstanceId,
+            location: characterId,
+            locationString: character.locationString
+          });
+
+          return true;
+
+        case BungieCodes.ItemNotFound:
+          // this might be trying to transfer guardian-to-guardian
+          break;
+
+        default:
+          return false;
+      }
     }
   })
 };
 
-function getItemsFromBucket(bucket, bucketHash, location, locationString) {
+function getItemsFromBucket({ bucket, bucketHash, location, locationString, isEquipped }) {
   const array = [];
   for (let itemIndex = 0; itemIndex < bucket.length; itemIndex++) {
     const item = bucket[itemIndex];
@@ -218,7 +298,8 @@ function getItemsFromBucket(bucket, bucketHash, location, locationString) {
         itemHash: item.itemHash,
         itemInstanceId: item.itemInstanceId,
         location,
-        locationString
+        locationString,
+        isEquipped
       });
     }
   }
@@ -249,12 +330,9 @@ async function getGhostShellsFromItems({ items, inventory, socketData, dispatch 
       const categorizedSockets = await dispatch.ghostModTypes.categorizeSockets(socketPlugHashes);
 
       return {
-        itemInstanceId: ghostShell.itemInstanceId,
-        name: ghostShell.name,
+        ...ghostShell,
         icon: `https://www.bungie.net${ghostShell.icon}`,
-        sockets: categorizedSockets,
-        location: ghostShell.location,
-        locationString: ghostShell.locationString
+        sockets: categorizedSockets
       };
     })
   );

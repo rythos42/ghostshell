@@ -1,17 +1,8 @@
 - if equip fails because the user isn't in the right spot, do a transfer to inventory instead and report that
-- "transfer from vault" involves checking how much inventory space user has (the last time we checked)
-    - if <9 shells, a-ok
-    - if 9 shells, transfer something TO vault first
-    - if it fails, report and move on
-- "equip from vault" 
-    - "transfer from vault"
-    - "equip"
 - "equip from other guardian"
     - "transfer to me"?
         - "transfer to guardian" then "transfer from vault"?
     - "equip"
-- separate "get access token" and "refresh shell data"
-- make "refresh shell data" faster then see if we need to separate "get access token" and "refresh"
 
 Bugs
 - filter checkboxes don't appear to come back later
@@ -20,6 +11,8 @@ Bugs
 
 
 Future
+- better way to denote which one is equipped on which character
+- need a new favicon
 - destinymanifest.json needs some cache management for when it is refreshed
 - travisCI deployment -- there's a timeout that is causing it not to work
 - update readme
@@ -33,3 +26,4 @@ Future
 - highlight shells with uncategorized sockets
 - something about confidential clients getting refresh tokens? how can I do that?
 - put character state into a character model
+- see if I need to separate "get access token" and "refresh shell data"
