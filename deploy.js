@@ -1,22 +1,22 @@
-var FtpDeploy = require("ftp-deploy");
+var FtpDeploy = require('ftp-deploy');
 var ftpDeploy = new FtpDeploy();
 
 var config = {
   user: process.env.FTP_USERNAME,
   password: process.env.FTP_PASSWORD,
-  host: "ftp.geeksong.com",
+  host: 'ftp.geeksong.com',
   port: 21,
-  localRoot: __dirname + "/src/client/build",
-  remoteRoot: "/public_html/ghostshell/",
-  include: ["**/*"],
-  exclude: ["config.json"],
+  localRoot: __dirname + '/build',
+  remoteRoot: '/public_html/ghostshell/',
+  include: ['**/*'],
+  exclude: ['config.json'],
   forcePasv: true
 };
 
-console.log("Deploying client");
+console.log('Deploying client');
 ftpDeploy
   .deploy(config)
   .then(res => {
-    console.log("Finished client");
+    console.log('Finished client');
   })
   .catch(err => console.log(err));

@@ -24,9 +24,10 @@ function App() {
     <Provider store={store}>
       <JssProvider jss={jss} generateClassName={generateClassName}>
         <MuiThemeProvider theme={theme}>
-          <Initialize />
-          <CssBaseline />
-          <Routes />
+          <Initialize>
+            <CssBaseline />
+            <Routes />
+          </Initialize>
         </MuiThemeProvider>
       </JssProvider>
     </Provider>
