@@ -1,16 +1,14 @@
-- if equip fails because the user isn't in the right spot, do a transfer to inventory instead and report that
-- "equip from other guardian"
-    - "transfer to me"?
-        - "transfer to guardian" then "transfer from vault"?
-    - "equip"
-
 Bugs
 - filter checkboxes don't appear to come back later
     I used it to do Crucible, then after it was filtered on Crucible but Crucible wasn't selected
-- check for a race condition on loading gender/race/class and using it in the refresh
 
 
 Future
+- Guardian to Guardian transfer is super complicated
+    - if it's equipped on the other guardian -- then equip any other non-desired shell
+    - transfer desired shell to vault
+    - transfer desired shell to desired guardian
+    - equip desired shell
 - better way to denote which one is equipped on which character
 - need a new favicon
 - destinymanifest.json needs some cache management for when it is refreshed

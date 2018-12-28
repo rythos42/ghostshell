@@ -3,6 +3,7 @@ import axios from 'axios';
 export const BungieCodes = {
   Success: 1,
   ItemNotFound: 1623,
+  CharacterNotInTower: 1634,
   NoRoomInDestination: 1642
 };
 

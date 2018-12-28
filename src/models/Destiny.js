@@ -213,12 +213,30 @@ export default {
       }
 
       // not on character to equip
-      if (response.ErrorCode === BungieCodes.ItemNotFound) {
-        const success = await dispatch.destiny.transferTo({ characterId, membershipType });
-        if (success) response = await equipItem(selectedGhostShell);
+      switch (response.ErrorCode) {
+        case BungieCodes.Success:
+          dispatch.destiny.setEquipped(selectedGhostShell.itemInstanceId);
+          break;
+        case BungieCodes.ItemNotFound:
+          const success = await dispatch.destiny.transferTo({ characterId, membershipType });
+          if (success) response = await equipItem(selectedGhostShell);
+          break;
+        case BungieCodes.CharacterNotInTower:
+          if (selectedGhostShell.location !== characterId) {
+            const success = await dispatch.destiny.transferTo({ characterId, membershipType });
+            if (success) {
+              dispatch.destiny.setApiResponseToUser({
+                bungieResponse: response,
+                message:
+                  'Cannot equip as you are not in social space, orbit or logged off. Transferred item to inventory instead.'
+              });
+              return;
+            }
+          }
+          break;
+        default:
+          break;
       }
-      if (response.ErrorCode === BungieCodes.Success)
-        dispatch.destiny.setEquipped(selectedGhostShell.itemInstanceId);
 
       dispatch.destiny.setApiResponseToUser({
         bungieResponse: response,
@@ -238,8 +256,11 @@ export default {
 
       switch (response.ErrorCode) {
         case BungieCodes.Success:
-          selectedGhostShell.location = characterId;
-          selectedGhostShell.locationString = character.locationString;
+          dispatch.destiny.setLocation({
+            itemInstanceId: selectedGhostShell.itemInstanceId,
+            location: characterId,
+            locationString: character.locationString
+          });
           return true;
 
         case BungieCodes.NoRoomInDestination:
@@ -279,7 +300,7 @@ export default {
           return true;
 
         case BungieCodes.ItemNotFound:
-          // this might be trying to transfer guardian-to-guardian
+          // trying to transfer guardian-to-guardian
           break;
 
         default:
