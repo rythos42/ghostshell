@@ -1,27 +1,30 @@
-Bugs
-- filter checkboxes don't appear to come back later
-    I used it to do Crucible, then after it was filtered on Crucible but Crucible wasn't selected
+UI
+- tooltip isn't great on mobile -- have to long press for 0
+- colors for accordians?
+- tooltip over disabled filters
+- tooltip on refresh button
+- tooltip on disabled equip button
+- show categories for shells
+- consider a better UI to show sockets/location/equipped/categories
 
-
-Future
+Feature
 - Guardian to Guardian transfer is super complicated
     - if it's equipped on the other guardian -- then equip any other non-desired shell
     - transfer desired shell to vault
     - transfer desired shell to desired guardian
     - equip desired shell
-- better way to denote which one is equipped on which character
-- need a new favicon
-- destinymanifest.json needs some cache management for when it is refreshed
-- travisCI deployment -- there's a timeout that is causing it not to work
-- update readme
-- tooltip isn't great on mobile -- have to long press for 0
-- colors for accordians?
-- do a proper regex in GhostModTypes.js
-- maybe a little UI around the ghost icon with icons that can be hovered over to say where (Vault, Warlock, etc) and tooltips for the sockets and the categories
-- tooltip over disabled filters
-- tooltip on refresh button
-- tooltip on disabled equip button
 - highlight shells with uncategorized sockets
-- something about confidential clients getting refresh tokens? how can I do that?
+
+Refactor
 - put character state into a character model
 - see if I need to separate "get access token" and "refresh shell data"
+- do a proper regex in GhostModTypes.js
+
+Bugs
+- filter checkboxes don't appear to come back later
+    I used it to do Crucible, then after it was filtered on Crucible but Crucible wasn't selected
+
+Ops
+- travisCI deployment -- there's a timeout that is causing it not to work
+- update readme
+- destinymanifest.json needs some cache management for when it is refreshed
