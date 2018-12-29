@@ -18,7 +18,6 @@ Feature
 Refactor
 - put character state into a character model
 - see if I need to separate "get access token" and "refresh shell data"
-- do a proper regex in GhostModTypes.js
 
 Bugs
 - filter checkboxes don't appear to come back later
