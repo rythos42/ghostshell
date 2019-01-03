@@ -221,7 +221,7 @@ export default {
           const success = await dispatch.destiny.transferTo({ characterId, membershipType });
           if (success) response = await equipItem(selectedGhostShell);
           break;
-        case BungieCodes.CharacterNotInTower:
+        case BungieCodes.CannotPerformActionAtThisLocation:
           if (selectedGhostShell.location !== characterId) {
             const success = await dispatch.destiny.transferTo({ characterId, membershipType });
             if (success) {

@@ -1,3 +1,5 @@
+not a tooltip on mobile -- footer to hold the same information on click
+
 UI
 - tooltip isn't great on mobile -- have to long press for 0
 - colors for accordians?
@@ -27,3 +29,5 @@ Ops
 - travisCI deployment -- there's a timeout that is causing it not to work
 - update readme
 - destinymanifest.json needs some cache management for when it is refreshed
+- remove unused portions of destinymanifest.json to reduce download size
+- create a config file for deployment so I don't have to type in the username and password every time

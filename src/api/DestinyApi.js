@@ -4,7 +4,8 @@ export const BungieCodes = {
   Success: 1,
   ItemNotFound: 1623,
   CharacterNotInTower: 1634,
-  NoRoomInDestination: 1642
+  NoRoomInDestination: 1642,
+  CannotPerformActionAtThisLocation: 1671
 };
 
 export default class {
