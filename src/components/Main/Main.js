@@ -11,26 +11,11 @@ import styles from './Main.module.css';
 
 class Main extends React.Component {
   state = {
-    mobileOpen: false,
-    isReturningUser: false
-  };
-
-  componentDidMount() {
-    const isReturningUser = global.localStorage.getItem('isReturningUser');
-    this.setState({ isReturningUser: isReturningUser });
-  }
-
-  state = {
     mobileOpen: false
   };
 
   handleDrawerToggle = () => {
     this.setState(state => ({ mobileOpen: !state.mobileOpen }));
-  };
-
-  handleSignInClick = () => {
-    global.localStorage.setItem('isReturningUser', true);
-    this.setState({ isReturningUser: true });
   };
 
   render() {
@@ -65,7 +50,7 @@ class Main extends React.Component {
         </nav>
         <main className={styles.main}>
           <AppBar
-            isReturningUser={this.state.isReturningUser}
+            isReturningUser={this.props.hasSignedIn}
             showProgressBar={this.props.isLoading}
             clientId={this.props.clientId}
             onMenuIconClick={this.handleDrawerToggle}
@@ -82,7 +67,8 @@ class Main extends React.Component {
 function mapStateToProps(state) {
   return {
     clientId: state.config.clientId,
-    isLoading: state.destiny.isLoading
+    isLoading: state.destiny.isLoading,
+    hasSignedIn: state.destiny.destinyApi !== null
   };
 }
 
