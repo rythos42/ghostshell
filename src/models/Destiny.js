@@ -1,4 +1,6 @@
-import { default as DestinyApi, BungieCodes } from '../api/DestinyApi';
+import { default as DestinyApi } from '../api/DestinyApi';
+import transferTo from '../managers/TransferManager';
+import equipTo from '../managers/EquipManager';
 
 export default {
   state: {
@@ -49,6 +51,9 @@ export default {
       };
     },
     setApiResponseToUser(state, apiResponse) {
+      if (!apiResponse.bungieResponse) apiResponse.bungieResponse = {};
+      if (!apiResponse.message) apiResponse.message = '';
+
       return {
         ...state,
         apiResponse
@@ -61,13 +66,17 @@ export default {
         destinyApi
       };
     },
-    setEquipped(state, itemInstanceId) {
+    setEquipped(state, { characterId, itemInstanceId }) {
       return {
         ...state,
-        ghostShells: state.ghostShells.map(ghostShell => ({
-          ...ghostShell,
-          isEquipped: ghostShell.itemInstanceId === itemInstanceId
-        }))
+        ghostShells: state.ghostShells.map(ghostShell =>
+          characterId !== ghostShell.location
+            ? ghostShell
+            : {
+                ...ghostShell,
+                isEquipped: ghostShell.itemInstanceId === itemInstanceId
+              }
+        )
       };
     },
     setLocation(state, { itemInstanceId, location, locationString }) {
@@ -196,116 +205,30 @@ export default {
       const destinyApi = getObject('destinyApi');
       if (destinyApi) dispatch.destiny.setDestinyApi(new DestinyApi(destinyApi));
     },
-    async equipSelectedShellToCharacter({ characterId, membershipType }, state) {
-      const { selectedGhostShell, destinyApi } = state.destiny;
-      let response = {};
-      const equipItem = destinyApi.createEquipItem({ characterId, membershipType });
-
-      try {
-        response = await equipItem(selectedGhostShell);
-      } catch (e) {
-        dispatch.destiny.setApiResponseToUser({
-          bungieResponse: {},
-          message:
-            'Your access to Bungie through this app has expired and must be refreshed before you can equip.'
-        });
-        return;
-      }
-
-      // not on character to equip
-      switch (response.ErrorCode) {
-        case BungieCodes.Success:
-          dispatch.destiny.setEquipped(selectedGhostShell.itemInstanceId);
-          break;
-        case BungieCodes.ItemNotFound:
-          const success = await dispatch.destiny.transferTo({ characterId, membershipType });
-          if (success) response = await equipItem(selectedGhostShell);
-          break;
-        case BungieCodes.CannotPerformActionAtThisLocation:
-          if (selectedGhostShell.location !== characterId) {
-            const success = await dispatch.destiny.transferTo({ characterId, membershipType });
-            if (success) {
-              dispatch.destiny.setApiResponseToUser({
-                bungieResponse: response,
-                message:
-                  'Cannot equip as you are not in social space, orbit or logged off. Transferred item to inventory instead.'
-              });
-              return;
-            }
-          }
-          break;
-        default:
-          break;
-      }
-
-      dispatch.destiny.setApiResponseToUser({
-        bungieResponse: response,
-        message: response.ErrorCode === BungieCodes.Success ? 'Equipped' : response.Message
-      });
-    },
     resetApiResponseToUser() {
       dispatch.destiny.setApiResponseToUser({ bungieResponse: {}, message: '' });
     },
+    async equipSelectedShellToCharacter({ characterId, membershipType }, state) {
+      const response = await equipTo({
+        equipShell: state.destiny.selectedGhostShell,
+        characterId,
+        membershipType,
+        state,
+        dispatch
+      });
+
+      dispatch.destiny.setApiResponseToUser(response);
+    },
     async transferTo({ characterId, membershipType }, state) {
-      const { selectedGhostShell, destinyApi } = state.destiny;
-      const transferItem = destinyApi.createTransferItem({ characterId, membershipType });
-      const response = await transferItem({ shell: selectedGhostShell, toVault: false });
-      const character = state.destiny.characters.find(
-        character => character.characterId === characterId
-      );
+      const response = await transferTo({
+        transferShell: state.destiny.selectedGhostShell,
+        characterId,
+        membershipType,
+        dispatch,
+        state
+      });
 
-      switch (response.ErrorCode) {
-        case BungieCodes.Success:
-          dispatch.destiny.setLocation({
-            itemInstanceId: selectedGhostShell.itemInstanceId,
-            location: characterId,
-            locationString: character.locationString
-          });
-          return true;
-
-        case BungieCodes.NoRoomInDestination:
-          // can't transfer to character -- transfer a non-equipped shell from character to vault then try again
-          const nonEquippedShell = state.destiny.ghostShells.find(
-            ghostShell => ghostShell.location === characterId && !ghostShell.isEquipped
-          );
-
-          const respToVault = await transferItem({ shell: nonEquippedShell, toVault: true });
-          if (respToVault.ErrorCode !== BungieCodes.Success) {
-            dispatch.destiny.setApiResponseToUser({
-              bungieResponse: respToVault,
-              message:
-                'Could not transfer from character to vault to make space to transfer to character.'
-            });
-            return false;
-          }
-          dispatch.destiny.setLocation({
-            itemInstanceId: nonEquippedShell.itemInstanceId,
-            location: 'vault',
-            locationString: 'Vault'
-          });
-
-          // try the transfer again
-          const respToCharacter = await transferItem({ shell: selectedGhostShell, toVault: false });
-          if (respToCharacter.ErrorCode !== BungieCodes.Success) {
-            dispatch.destiny.setApiResponseToUser({ bungieResponse: respToCharacter });
-            return false;
-          }
-
-          dispatch.destiny.setLocation({
-            itemInstanceId: selectedGhostShell.itemInstanceId,
-            location: characterId,
-            locationString: character.locationString
-          });
-
-          return true;
-
-        case BungieCodes.ItemNotFound:
-          // trying to transfer guardian-to-guardian
-          break;
-
-        default:
-          return false;
-      }
+      dispatch.destiny.setApiResponseToUser(response);
     }
   })
 };

@@ -106,7 +106,8 @@ export default class {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'X-API-Key': this.apiKey
-      }
+      },
+      withCredentials: true
     };
     if (this.accessToken) config.headers.Authorization = `Bearer ${this.accessToken}`;
 

@@ -8,6 +8,7 @@
     "@material-ui/icons": "^3.0.1",
     "@rematch/core": "^1.0.6",
     "axios": "^0.18.0",
+    "detect-hover": "^1.0.2",
     "jss": "^9.8.7",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
@@ -41,7 +42,7 @@
     "eslint-plugin-jsx-a11y": "6.1.1",
     "eslint-plugin-prettier": "^3.0.0",
     "eslint-plugin-react": "7.11.0",
-    "prettier": "^1.15.3",
-    "ftp-deploy": "^2.2.1"
+    "ftp-deploy": "^2.2.1",
+    "prettier": "^1.15.3"
   }
 }

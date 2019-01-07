@@ -1,6 +1,8 @@
-not a tooltip on mobile -- footer to hold the same information on click
+
+- need to throttle calls? affinity issue?
 
 UI
+- not a tooltip on mobile -- footer to hold the same information on click
 - tooltip isn't great on mobile -- have to long press for 0
 - colors for accordians?
 - tooltip over disabled filters
@@ -10,16 +12,19 @@ UI
 - consider a better UI to show sockets/location/equipped/categories
 
 Feature
-- Guardian to Guardian transfer is super complicated
-    - if it's equipped on the other guardian -- then equip any other non-desired shell
-    - transfer desired shell to vault
-    - transfer desired shell to desired guardian
-    - equip desired shell
 - highlight shells with uncategorized sockets
 
 Refactor
 - put character state into a character model
 - see if I need to separate "get access token" and "refresh shell data"
+- ghostShell.location is either a characterId or 'vault', should be named better?
+- ghostShell should have a membershipType on it as well for in TransferManager.transferTo and EquipManager.equipTo
+- TransferManager and EquipManager should use dispatch and state less
+- now that equip and transfer code are in modules, definitely room to make well named functions from code inside them
+- probably should have a function that transfers to vault
+- should have another function that handles updating location
+- shell refresh should be in a manager
+- oauth refresh should be in a manager
 
 Bugs
 - filter checkboxes don't appear to come back later
