@@ -20,10 +20,4 @@
 .tile.selected {
   transition: 0.2s;
   transform: scale(1.07, 1.07);
-  z-index: 100;
-}
-
-.tooltip ul {
-  padding-left: 20px;
-  margin-top: 0;
 }

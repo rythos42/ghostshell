@@ -16,7 +16,7 @@ export default class AppBar extends React.Component {
       this.props.clientId
     }&response_type=code&state=asdf`;
     return (
-      <MuiAppBar color="default" position="static">
+      <MuiAppBar color="default" position="relative">
         <Toolbar className={styles.toolbar}>
           <IconButton
             color="inherit"

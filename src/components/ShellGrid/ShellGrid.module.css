@@ -1,11 +1,15 @@
 .gridContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 4em;
+  margin-bottom: 1em;
+  margin-right: 1em;
 }
 
-.grid {
-  padding-bottom: 1em;
-  padding-right: 1em;
+.gridContainer ul {
+  overflow: hidden;
+  justify-content: center;
+}
+
+@media (min-width: 600px) {
+  .gridContainer ul {
+    justify-content: flex-start;
+  }
 }

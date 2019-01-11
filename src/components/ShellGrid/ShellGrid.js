@@ -29,7 +29,7 @@ class ShellGrid extends React.Component {
     return (
       <div className={styles.gridContainer}>
         {ghostShells.length > 0 ? (
-          <GridList className={styles.grid}>
+          <GridList>
             {ghostShells.map(ghostShell => (
               <ShellGridTile
                 key={ghostShell.itemInstanceId}
@@ -37,6 +37,7 @@ class ShellGrid extends React.Component {
                 filter={filter}
                 selected={ghostShell.itemInstanceId === this.state.selectedTileItemInstanceId}
                 onTileClick={this.handleTileClick}
+                hasHover={this.props.hasHover}
               />
             ))}
           </GridList>
@@ -51,7 +52,8 @@ class ShellGrid extends React.Component {
 function mapStateToProps(state) {
   return {
     ghostShells: state.destiny.ghostShells,
-    filter: state.destiny.filter
+    filter: state.destiny.filter,
+    hasHover: state.config.hasHover
   };
 }
 

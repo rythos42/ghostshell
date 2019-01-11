@@ -1,9 +1,5 @@
 
-- need to throttle calls? affinity issue?
-
 UI
-- not a tooltip on mobile -- footer to hold the same information on click
-- tooltip isn't great on mobile -- have to long press for 0
 - colors for accordians?
 - tooltip over disabled filters
 - tooltip on refresh button

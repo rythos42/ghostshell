@@ -1,35 +1,11 @@
 import React from 'react';
 import GridListTile from '@material-ui/core/GridListTile';
 import Tooltip from '@material-ui/core/Tooltip';
-import Typography from '@material-ui/core/Typography';
 
 import styles from './ShellGridTile.module.css';
+import ShellInfo from '../ShellInfo';
 
 class ShellGridTile extends React.Component {
-  makeTooltip(ghostShell) {
-    return (
-      <div className={styles.tooltip}>
-        <Typography color="inherit" variant="subtitle1" gutterBottom>
-          {ghostShell.name}
-        </Typography>
-        <Typography color="inherit" variant="subtitle2" gutterBottom>
-          {ghostShell.locationString}
-          {ghostShell.isEquipped && ' - Equipped'}
-        </Typography>
-        {ghostShell.sockets.map(socket => (
-          <div key={socket.hash}>
-            <Typography color="inherit">{socket.name}</Typography>
-            <ul>
-              <li>
-                <Typography color="inherit">{socket.description}</Typography>
-              </li>
-            </ul>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   isFilteredOut(ghostShell, filter) {
     // no filter, show everything
     const filterKeys = Object.keys(filter);
@@ -69,9 +45,11 @@ class ShellGridTile extends React.Component {
         onClick={() => this.props.onTileClick(ghostShell)}
       >
         <Tooltip
-          title={this.makeTooltip(ghostShell)}
+          title={<ShellInfo ghostShell={ghostShell} />}
           aria-label={ghostShell.name}
           enterTouchDelay={0}
+          disableTouchListener={!this.props.hasHover}
+          disableHoverListener={!this.props.hasHover}
         >
           <div>
             {this.isFilteredOut(ghostShell, this.props.filter) && (

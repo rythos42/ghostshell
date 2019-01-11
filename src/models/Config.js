@@ -1,9 +1,11 @@
 import axios from 'axios';
+import detectHover from 'detect-hover';
 
 export default {
   state: {
     apiKey: '',
-    clientId: ''
+    clientId: '',
+    hasHover: detectHover.hover === true
   },
   reducers: {
     set(state, config) {
@@ -27,6 +29,7 @@ function createConfig(configData, state) {
   return {
     ...state,
     apiKey: configData.bungieApiKey,
-    clientId: configData.bungieClientId
+    clientId: configData.bungieClientId,
+    hasHover: detectHover.hover === true
   };
 }
