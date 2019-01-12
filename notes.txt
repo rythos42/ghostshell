@@ -14,18 +14,16 @@ Feature
 Refactor
 - ghostShell.location is either a characterId or 'vault', should be named better?
 - ghostShell should have a membershipType on it as well for in TransferManager.transferTo and EquipManager.equipTo
-- TransferManager and EquipManager should use dispatch and state less
+- see about using dispatch and state less in *Managers
 - now that equip and transfer code are in modules, definitely room to make well named functions from code inside them
-- probably should have a function that transfers to vault
-- should have another function that handles updating location
-- shell refresh should be in a manager
-- put "getByHash" into a file that can be imported
+- function that transfers to vault
+- function that handles updating location
+- character.locationString is a 'description'
+- don't know if GhostModTypes is still a model -- just contains enum information
 
 Bugs
 - filter checkboxes don't appear to come back later
     I used it to do Crucible, then after it was filtered on Crucible but Crucible wasn't selected
-- system doesn't at all work if you have an account on PC and XBox -- overwrites last account
-
 
 Ops
 - travisCI deployment -- there's a timeout that is causing it not to work

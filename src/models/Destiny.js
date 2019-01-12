@@ -1,6 +1,9 @@
 import { default as DestinyApi } from '../api/DestinyApi';
 import transferTo from '../managers/TransferManager';
 import equipTo from '../managers/EquipManager';
+import { assembleCharacters } from '../managers/MembershipManager';
+import assembleShells from '../managers/ShellsManager';
+import { getJsonObject } from '../util/WebUtil';
 
 export default {
   state: {
@@ -12,18 +15,29 @@ export default {
     destinyApi: null
   },
   reducers: {
-    addGhostShells(state, ghostShells) {
-      global.localStorage.setItem('ghostShells', JSON.stringify(ghostShells));
+    clearUserData(state) {
       return {
         ...state,
-        ghostShells
+        ghostShells: [],
+        characters: [],
+        selectedGhostShell: null,
+        apiResponse: { bungieResponse: {}, message: '' }
       };
     },
-    setCharacters(state, characters) {
-      global.localStorage.setItem('characters', JSON.stringify(characters));
+    addGhostShells(state, ghostShells) {
+      const newGhostShells = [...state.ghostShells, ...ghostShells];
+      global.localStorage.setItem('ghostShells', JSON.stringify(newGhostShells));
       return {
         ...state,
-        characters
+        ghostShells: newGhostShells
+      };
+    },
+    addCharacters(state, characters) {
+      const newCharacters = [...state.characters, ...characters];
+      global.localStorage.setItem('characters', JSON.stringify(newCharacters));
+      return {
+        ...state,
+        characters: newCharacters
       };
     },
     setHasSignedIn(state) {
@@ -106,103 +120,35 @@ export default {
       const membershipInfo = await destinyApi.getMembershipInfo();
       const memberships = membershipInfo.destinyMemberships;
 
+      dispatch.destiny.clearUserData();
+
       memberships.forEach(async membership => {
-        const characters = await destinyApi.getProfileData({
-          membershipId: membership.membershipId,
-          membershipType: membership.membershipType
-        });
+        const { membershipId, membershipType } = membership;
+        const profile = await destinyApi.getProfileData({ membershipId, membershipType });
 
-        const characterData = [];
-        const characterDescriptions = {};
-        const bungieCharacters = characters.characters.data;
-        for (let characterId in bungieCharacters) {
-          if (!bungieCharacters.hasOwnProperty(characterId)) continue;
+        const characterData = assembleCharacters({ membershipType, profile, state });
+        dispatch.destiny.addCharacters(characterData);
 
-          const character = bungieCharacters[characterId];
+        const ghostShells = assembleShells({ profile, state, dispatch });
 
-          const raceString = getName(state.manifest.races, character.raceHash);
-          const classString = getName(state.manifest.classes, character.classHash);
-          const genderString = getName(state.manifest.genders, character.genderHash);
-
-          const locationString = `${classString.toUpperCase()} ${raceString} ${genderString}`;
-          characterDescriptions[characterId] = locationString;
-
-          characterData.push({
-            characterId: characterId,
-            emblemBackgroundPath: character.emblemBackgroundPath,
-            membershipType: membership.membershipType,
-            raceString: raceString,
-            classString: classString,
-            genderString: genderString,
-            locationString: locationString
-          });
-        }
-        dispatch.destiny.setCharacters(characterData);
-
-        let ghostShellData = [];
-        const types = ['characterInventories', 'characterEquipment'];
-        for (let inventoryTypeIndex = 0; inventoryTypeIndex < types.length; inventoryTypeIndex++) {
-          const inventoryType = types[inventoryTypeIndex];
-          const characterInventory = characters[inventoryType].data;
-          for (let characterId in characterInventory) {
-            if (!characterInventory.hasOwnProperty(characterId)) continue;
-
-            ghostShellData = ghostShellData.concat(
-              getItemsFromBucket({
-                bucket: characterInventory[characterId].items,
-                bucketHash: 4023194814,
-                location: characterId,
-                locationString: characterDescriptions[characterId],
-                isEquipped: inventoryType === 'characterEquipment'
-              })
-            );
-          }
-        }
-
-        const socketData = characters.itemComponents.sockets.data;
-        const ghostShells = await getGhostShellsFromItems({
-          items: ghostShellData,
-          inventory: state.manifest.inventory,
-          socketData,
-          dispatch
-        });
-
-        const vaultItems = getItemsFromBucket({
-          bucket: characters.profileInventory.data.items,
-          bucketHash: 138197802,
-          location: 'vault',
-          locationString: 'Vault',
-          isEquipped: false
-        });
-
-        const vaultGhostShells = await getGhostShellsFromItems({
-          items: vaultItems,
-          inventory: state.manifest.inventory,
-          socketData,
-          dispatch
-        });
-
-        dispatch.destiny.addGhostShells(ghostShells.concat(vaultGhostShells));
+        dispatch.destiny.addGhostShells(ghostShells);
         dispatch.destiny.setHasSignedIn();
         dispatch.destiny.setIsLoading(false);
       });
     },
     initialize() {
-      function getObject(key) {
-        const json = global.localStorage.getItem(key);
-        return json ? JSON.parse(json) : null;
-      }
+      dispatch.destiny.clearUserData();
 
-      const ghostShells = getObject('ghostShells');
+      const ghostShells = getJsonObject('ghostShells');
       if (ghostShells) {
         dispatch.destiny.addGhostShells(ghostShells);
         dispatch.destiny.setHasSignedIn();
       }
 
-      const characters = getObject('characters');
-      if (characters) dispatch.destiny.setCharacters(characters);
+      const characters = getJsonObject('characters');
+      if (characters) dispatch.destiny.addCharacters(characters);
 
-      const destinyApi = getObject('destinyApi');
+      const destinyApi = getJsonObject('destinyApi');
       if (destinyApi) dispatch.destiny.setDestinyApi(new DestinyApi(destinyApi));
     },
     resetApiResponseToUser() {
@@ -232,53 +178,3 @@ export default {
     }
   })
 };
-
-function getItemsFromBucket({ bucket, bucketHash, location, locationString, isEquipped }) {
-  const array = [];
-  for (let itemIndex = 0; itemIndex < bucket.length; itemIndex++) {
-    const item = bucket[itemIndex];
-    if (item.bucketHash === bucketHash) {
-      array.push({
-        itemHash: item.itemHash,
-        itemInstanceId: item.itemInstanceId,
-        location,
-        locationString,
-        isEquipped
-      });
-    }
-  }
-  return array;
-}
-
-function getName(array, hash) {
-  return getByHash(array, hash).displayProperties.name;
-}
-
-function getByHash(array, hash) {
-  return array[hash] || array[hash - 4294967296];
-}
-
-async function getGhostShellsFromItems({ items, inventory, socketData, dispatch }) {
-  const ghostShells = await Promise.all(
-    items.map(async ghostShell => {
-      const itemDefinition = getByHash(inventory, ghostShell.itemHash);
-      if (!itemDefinition) return null;
-      ghostShell.name = itemDefinition.displayProperties.name;
-      ghostShell.icon = itemDefinition.displayProperties.icon;
-      ghostShell.description = itemDefinition.displayProperties.description;
-
-      const socketPlugHashes = socketData[ghostShell.itemInstanceId].sockets
-        .map(itemSocket => itemSocket.plugHash)
-        .filter(socketPlugHash => socketPlugHash != null);
-
-      const categorizedSockets = await dispatch.ghostModTypes.categorizeSockets(socketPlugHashes);
-
-      return {
-        ...ghostShell,
-        icon: `https://www.bungie.net${ghostShell.icon}`,
-        sockets: categorizedSockets
-      };
-    })
-  );
-  return ghostShells.filter(vaultGhostItem => vaultGhostItem);
-}
