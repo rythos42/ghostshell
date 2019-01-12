@@ -1,6 +1,10 @@
 .gridContainer {
   margin-bottom: 1em;
   margin-right: 1em;
+  display: flex;
+  align-items: center;
+  min-height: 4em;
+  justify-content: center;
 }
 
 .gridContainer ul {
