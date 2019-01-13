@@ -1,7 +1,6 @@
-import { getCharacterDescription } from './MembershipManager';
 import { getByHash } from '../util/DestinyUtil';
 
-export default function assembleShells({ profile, state }) {
+export default function assembleShells({ profile, state, membershipType }) {
   let ghostShellData = [];
   const types = ['characterInventories', 'characterEquipment'];
   for (let inventoryTypeIndex = 0; inventoryTypeIndex < types.length; inventoryTypeIndex++) {
@@ -14,8 +13,11 @@ export default function assembleShells({ profile, state }) {
         getItemsFromBucket({
           bucket: characterInventory[characterId].items,
           bucketHash: 4023194814,
-          location: characterId,
-          locationString: getCharacterDescription({ state, characterId }),
+          location: {
+            characterId,
+            membershipType,
+            inVault: false
+          },
           isEquipped: inventoryType === 'characterEquipment'
         })
       );
@@ -32,8 +34,10 @@ export default function assembleShells({ profile, state }) {
   const vaultItems = getItemsFromBucket({
     bucket: profile.profileInventory.data.items,
     bucketHash: 138197802,
-    location: 'vault',
-    locationString: 'Vault',
+    location: {
+      membershipType,
+      inVault: true
+    },
     isEquipped: false
   });
 
@@ -46,7 +50,7 @@ export default function assembleShells({ profile, state }) {
   return ghostShells.concat(vaultGhostShells);
 }
 
-function getItemsFromBucket({ bucket, bucketHash, location, locationString, isEquipped }) {
+function getItemsFromBucket({ bucket, bucketHash, location, isEquipped }) {
   const array = [];
   for (let itemIndex = 0; itemIndex < bucket.length; itemIndex++) {
     const item = bucket[itemIndex];
@@ -55,7 +59,6 @@ function getItemsFromBucket({ bucket, bucketHash, location, locationString, isEq
         itemHash: item.itemHash,
         itemInstanceId: item.itemInstanceId,
         location,
-        locationString,
         isEquipped
       });
     }

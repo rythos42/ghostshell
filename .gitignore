@@ -11,6 +11,7 @@ bin
 *.user
 .suo
 sqlite3
+deploy-config.js
 
 # destiny specific stuff
 destinymanifest.*

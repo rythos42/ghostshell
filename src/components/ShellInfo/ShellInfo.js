@@ -1,10 +1,22 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import Typography from '@material-ui/core/Typography';
 
 import styles from './ShellInfo.module.css';
 
-export default class ShellInfo extends React.Component {
+class ShellInfo extends React.Component {
+  state = {
+    locationString: ''
+  };
+
+  async componentDidMount() {
+    const locationString = await this.props.getLocationString(this.props.ghostShell.location);
+    this.setState({ locationString: locationString });
+  }
+
   render() {
+    if (!this.state.locationString) return null;
+
     const { ghostShell } = this.props;
     return (
       <div className={styles.tooltip}>
@@ -12,7 +24,7 @@ export default class ShellInfo extends React.Component {
           {ghostShell.name}
         </Typography>
         <Typography color="inherit" variant="subtitle2" gutterBottom>
-          {ghostShell.locationString}
+          {this.state.locationString}
           {ghostShell.isEquipped && ' - Equipped'}
         </Typography>
         {ghostShell.sockets.map(socket => (
@@ -29,3 +41,14 @@ export default class ShellInfo extends React.Component {
     );
   }
 }
+
+function mapDispatchToProps(dispatch) {
+  return {
+    getLocationString: dispatch.destiny.getLocationString
+  };
+}
+
+export default connect(
+  null,
+  mapDispatchToProps
+)(ShellInfo);

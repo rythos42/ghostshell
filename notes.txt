@@ -12,21 +12,25 @@ Feature
 - highlight shells with uncategorized sockets
 
 Refactor
-- ghostShell.location is either a characterId or 'vault', should be named better?
-- ghostShell should have a membershipType on it as well for in TransferManager.transferTo and EquipManager.equipTo
 - see about using dispatch and state less in *Managers
 - now that equip and transfer code are in modules, definitely room to make well named functions from code inside them
 - function that transfers to vault
 - function that handles updating location
-- character.locationString is a 'description'
 - don't know if GhostModTypes is still a model -- just contains enum information
+- getItemsFromBucket can probably be done with an array filter instead
 
 Bugs
-- filter checkboxes don't appear to come back later
-    I used it to do Crucible, then after it was filtered on Crucible but Crucible wasn't selected
+- Don't show "sign in to see" if the loading bar is showing
+- New error when trying to equip a shell for transfer --
+    {"Response":0,"ErrorCode":1638,"ThrottleSeconds":0,"ErrorStatus":"DestinyItemFailedLevelCheck","Message":"Your level isn't high enough to use this item.","MessageData":{}}
+- Location message not updated properly. STR:
+    1. Equip from inventory
+    2. Equip from vault
+    3. Equip from other guardian
+    4. Equip from other guardians equipped
+    Actual: Somewhere in those steps one of the shells was said to be in the wrong spot :(
 
 Ops
 - travisCI deployment -- there's a timeout that is causing it not to work
 - update readme
 - destinymanifest.json needs some cache management for when it is refreshed
-- create a config file for deployment so I don't have to type in the username and password every time

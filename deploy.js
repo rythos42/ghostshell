@@ -1,9 +1,23 @@
 var FtpDeploy = require('ftp-deploy');
 var ftpDeploy = new FtpDeploy();
 
+var username = process.env.FTP_USERNAME;
+var password = process.env.FTP_PASSWORD;
+
+try {
+  var deployConfig = require('./deploy-config');
+  username = deployConfig.username;
+  password = deployConfig.password;
+} catch (e) {
+  console.warn(
+    'No deploy-config.js containing FTP_USERNAME and FTP_PASSWORD found, using from environment'
+  );
+  console.log(e);
+}
+
 var config = {
-  user: process.env.FTP_USERNAME,
-  password: process.env.FTP_PASSWORD,
+  user: username,
+  password: password,
   host: 'ftp.geeksong.com',
   port: 21,
   localRoot: __dirname + '/build',

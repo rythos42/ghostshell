@@ -1,7 +1,7 @@
 import { default as DestinyApi } from '../api/DestinyApi';
 import transferTo from '../managers/TransferManager';
 import equipTo from '../managers/EquipManager';
-import { assembleCharacters } from '../managers/MembershipManager';
+import assembleCharacters from '../managers/MembershipManager';
 import assembleShells from '../managers/ShellsManager';
 import { getJsonObject } from '../util/WebUtil';
 
@@ -84,7 +84,7 @@ export default {
       return {
         ...state,
         ghostShells: state.ghostShells.map(ghostShell =>
-          characterId !== ghostShell.location
+          characterId !== ghostShell.location.characterId
             ? ghostShell
             : {
                 ...ghostShell,
@@ -93,16 +93,12 @@ export default {
         )
       };
     },
-    setLocation(state, { itemInstanceId, location, locationString }) {
+    setLocation(state, { itemInstanceId, location }) {
       return {
         ...state,
         ghostShells: state.ghostShells.map(ghostShell => ({
           ...ghostShell,
-          location: ghostShell.itemInstanceId === itemInstanceId ? location : ghostShell.location,
-          locationString:
-            ghostShell.itemInstanceId === itemInstanceId
-              ? locationString
-              : ghostShell.locationString
+          location: ghostShell.itemInstanceId === itemInstanceId ? location : ghostShell.location
         }))
       };
     }
@@ -129,7 +125,7 @@ export default {
         const characterData = assembleCharacters({ membershipType, profile, state });
         dispatch.destiny.addCharacters(characterData);
 
-        const ghostShells = assembleShells({ profile, state });
+        const ghostShells = assembleShells({ profile, state, membershipType });
 
         dispatch.destiny.addGhostShells(ghostShells);
         dispatch.destiny.setHasSignedIn();
@@ -175,6 +171,14 @@ export default {
       });
 
       dispatch.destiny.setApiResponseToUser(response);
+    },
+    getLocationString(location, state) {
+      if (location.inVault) return 'Vault';
+
+      const foundCharacter = state.destiny.characters.find(
+        character => character.characterId === location.characterId
+      );
+      return foundCharacter ? foundCharacter.description : null;
     }
   })
 };

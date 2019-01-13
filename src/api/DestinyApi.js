@@ -41,10 +41,6 @@ export default class {
     };
   }
 
-  createEquipItem({ characterId, membershipType }) {
-    return ({ itemInstanceId }) => this.equipItem({ itemInstanceId, characterId, membershipType });
-  }
-
   async equipItem({ itemInstanceId, characterId, membershipType }) {
     const data = { itemId: itemInstanceId, characterId, membershipType };
     const response = await axios.post(
@@ -54,17 +50,6 @@ export default class {
     );
 
     return response.data;
-  }
-
-  createTransferItem({ characterId, membershipType }) {
-    return ({ shell: { itemInstanceId, itemHash }, toVault }) =>
-      this.transferItem({
-        itemInstanceId,
-        itemHash,
-        toVault,
-        characterId,
-        membershipType
-      });
   }
 
   async transferItem({ itemInstanceId, itemHash, characterId, membershipType, toVault }) {

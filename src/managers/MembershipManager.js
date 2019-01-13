@@ -1,6 +1,6 @@
 import { getName } from '../util/DestinyUtil';
 
-export function assembleCharacters({ membershipType, profile, state }) {
+export default function assembleCharacters({ membershipType, profile, state }) {
   const characterData = [];
   const bungieCharacters = profile.characters.data;
   for (let characterId in bungieCharacters) {
@@ -12,7 +12,7 @@ export function assembleCharacters({ membershipType, profile, state }) {
     const classString = getName(state.manifest.classes, character.classHash);
     const genderString = getName(state.manifest.genders, character.genderHash);
 
-    const locationString = `${classString.toUpperCase()} ${raceString} ${genderString}`;
+    const description = `${classString.toUpperCase()} ${raceString} ${genderString}`;
 
     characterData.push({
       characterId: characterId,
@@ -21,15 +21,8 @@ export function assembleCharacters({ membershipType, profile, state }) {
       raceString: raceString,
       classString: classString,
       genderString: genderString,
-      locationString: locationString
+      description: description
     });
   }
   return characterData;
-}
-
-export function getCharacterDescription({ state, characterId }) {
-  const foundCharacter = state.destiny.characters.find(
-    character => character.characterId === characterId
-  );
-  return foundCharacter ? foundCharacter.locationString : null;
 }

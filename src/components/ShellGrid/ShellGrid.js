@@ -24,7 +24,7 @@ class ShellGrid extends React.Component {
   };
 
   render() {
-    const { ghostShells, filter } = this.props;
+    const { ghostShells, filter, isLoading } = this.props;
 
     return (
       <div className={styles.gridContainer}>
@@ -42,7 +42,7 @@ class ShellGrid extends React.Component {
             ))}
           </GridList>
         ) : (
-          <div>Sign in to see your Ghost Shells.</div>
+          !isLoading && <div>Sign in to see your Ghost Shells.</div>
         )}
       </div>
     );
@@ -53,7 +53,8 @@ function mapStateToProps(state) {
   return {
     ghostShells: state.destiny.ghostShells,
     filter: state.destiny.filter,
-    hasHover: state.config.hasHover
+    hasHover: state.config.hasHover,
+    isLoading: state.destiny.isLoading
   };
 }
 

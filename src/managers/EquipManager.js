@@ -3,10 +3,14 @@ import transferTo from './TransferManager';
 
 async function equipTo({ equipShell, characterId, membershipType, state, dispatch }) {
   let response = {};
-  const equipItem = state.destiny.destinyApi.createEquipItem({ characterId, membershipType });
+  const { destinyApi } = state.destiny;
 
   try {
-    response = await equipItem(equipShell);
+    response = await destinyApi.equipItem({
+      characterId,
+      membershipType,
+      itemInstanceId: equipShell.itemInstanceId
+    });
   } catch (e) {
     return {
       bungieResponse: {},
@@ -21,6 +25,7 @@ async function equipTo({ equipShell, characterId, membershipType, state, dispatc
       dispatch.destiny.setEquipped({ itemInstanceId: equipShell.itemInstanceId, characterId });
       break;
     case BungieCodes.ItemNotFound:
+      // Item isn't in the users direct inventory
       const transferResponse = await transferTo({
         transferShell: equipShell,
         characterId,
@@ -29,14 +34,19 @@ async function equipTo({ equipShell, characterId, membershipType, state, dispatc
         state
       });
       if (!transferResponse.error) {
-        response = await equipItem(equipShell);
+        response = await destinyApi.equipItem({
+          characterId,
+          membershipType,
+          itemInstanceId: equipShell.itemInstanceId
+        });
         if (response.ErrorCode === BungieCodes.Success) {
           dispatch.destiny.setEquipped({ itemInstanceId: equipShell.itemInstanceId, characterId });
         }
       }
       break;
     case BungieCodes.CannotPerformActionAtThisLocation:
-      if (equipShell.location !== characterId) {
+      // User is not in a place they can equip - transfer the item instead
+      if (equipShell.location.characterId !== characterId) {
         const transferResponse = await transferTo({
           transferShell: equipShell,
           characterId,
