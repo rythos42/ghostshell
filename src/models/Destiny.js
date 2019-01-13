@@ -129,7 +129,7 @@ export default {
         const characterData = assembleCharacters({ membershipType, profile, state });
         dispatch.destiny.addCharacters(characterData);
 
-        const ghostShells = assembleShells({ profile, state, dispatch });
+        const ghostShells = assembleShells({ profile, state });
 
         dispatch.destiny.addGhostShells(ghostShells);
         dispatch.destiny.setHasSignedIn();

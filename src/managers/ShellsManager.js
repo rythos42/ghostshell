@@ -1,7 +1,7 @@
 import { getCharacterDescription } from './MembershipManager';
 import { getByHash } from '../util/DestinyUtil';
 
-export default function assembleShells({ profile, state, dispatch }) {
+export default function assembleShells({ profile, state }) {
   let ghostShellData = [];
   const types = ['characterInventories', 'characterEquipment'];
   for (let inventoryTypeIndex = 0; inventoryTypeIndex < types.length; inventoryTypeIndex++) {
@@ -26,8 +26,7 @@ export default function assembleShells({ profile, state, dispatch }) {
   const ghostShells = getGhostShellsFromItems({
     items: ghostShellData,
     inventory: state.manifest.inventory,
-    socketData,
-    dispatch
+    socketData
   });
 
   const vaultItems = getItemsFromBucket({
@@ -41,8 +40,7 @@ export default function assembleShells({ profile, state, dispatch }) {
   const vaultGhostShells = getGhostShellsFromItems({
     items: vaultItems,
     inventory: state.manifest.inventory,
-    socketData,
-    dispatch
+    socketData
   });
 
   return ghostShells.concat(vaultGhostShells);
@@ -65,7 +63,7 @@ function getItemsFromBucket({ bucket, bucketHash, location, locationString, isEq
   return array;
 }
 
-function getGhostShellsFromItems({ items, inventory, socketData, dispatch }) {
+function getGhostShellsFromItems({ items, inventory, socketData }) {
   const ghostShells = items.map(ghostShell => {
     const itemDefinition = getByHash(inventory, ghostShell.itemHash);
     if (!itemDefinition) return null;

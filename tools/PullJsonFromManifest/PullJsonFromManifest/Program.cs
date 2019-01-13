@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Data.SQLite;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace PullJsonFromManifest
 {
@@ -59,6 +61,7 @@ namespace PullJsonFromManifest
 
                                     if (dbReadData.Filter(json))
                                     {
+                                        json = CleanUp(json);
                                         stream.Write($"{rowPrefix}\"{id}\": {json}");
                                         rowPrefix = ",";
                                     }
@@ -73,6 +76,58 @@ namespace PullJsonFromManifest
                     stream.Close();
                 }
             }
+        }
+
+        static string CleanUp(string json)
+        {
+            var obj = JObject.Parse(json);
+
+            obj.Remove("backgroundColor");
+            obj.Remove("action");
+            obj.Remove("inventory");
+            obj.Remove("plug");
+            obj.Remove("perks");
+            obj.Remove("itemCategoryHashes");
+            obj.Remove("blacklisted");
+            obj.Remove("redacted");
+            obj.Remove("index");
+            obj.Remove("defaultDamageType");
+            obj.Remove("equippable");
+            obj.Remove("classType");
+            obj.Remove("itemSubType");
+            obj.Remove("itemType");
+            obj.Remove("specialItemType");
+            obj.Remove("nonTransferrable");
+            obj.Remove("doesPostmasterPullHaveSideEffects");
+            obj.Remove("allowActions");
+            obj.Remove("investmentStats");
+            obj.Remove("acquireUnlockHash");
+            obj.Remove("acquireRewardSiteHash");
+            obj.Remove("displaySource");
+            obj.Remove("itemTypeAndTierDisplayName");
+            obj.Remove("uiItemDisplayStyle");
+            obj.Remove("itemTypeDisplayName");
+            obj.Remove("tooltipStyle");
+            obj.Remove("sourceData");
+            obj.Remove("objectives");
+            obj.Remove("questlineItemHash");
+            obj.Remove("narrative");
+            obj.Remove("objectiveVerbName");
+            obj.Remove("questTypeIdentifier");
+            obj.Remove("questTypeHash");
+            obj.Remove("collectibleHash");
+            obj.Remove("stats");
+            obj.Remove("equippingBlock");
+            obj.Remove("translationBlock");
+            obj.Remove("preview");
+            obj.Remove("quality");
+            obj.Remove("socketCategories");
+            obj.Remove("intrinsicSockets");
+            obj.Remove("talentGrid");
+            obj.Remove("screenshot");
+            obj.Remove("sockets");
+
+            return obj.ToString(Formatting.None);
         }
     }
 }
