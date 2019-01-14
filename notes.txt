@@ -17,7 +17,6 @@ Refactor
 - function that transfers to vault
 - function that handles updating location
 - don't know if GhostModTypes is still a model -- just contains enum information
-- getItemsFromBucket can probably be done with an array filter instead
 
 Bugs
 - Don't show "sign in to see" if the loading bar is showing

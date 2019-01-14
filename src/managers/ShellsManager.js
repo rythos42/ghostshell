@@ -10,16 +10,18 @@ export default function assembleShells({ profile, state, membershipType }) {
       if (!characterInventory.hasOwnProperty(characterId)) continue;
 
       ghostShellData = ghostShellData.concat(
-        getItemsFromBucket({
-          bucket: characterInventory[characterId].items,
-          bucketHash: 4023194814,
-          location: {
-            characterId,
-            membershipType,
-            inVault: false
-          },
-          isEquipped: inventoryType === 'characterEquipment'
-        })
+        characterInventory[characterId].items
+          .filter(item => item.bucketHash === 4023194814)
+          .map(item => ({
+            itemHash: item.itemHash,
+            itemInstanceId: item.itemInstanceId,
+            location: {
+              characterId,
+              membershipType,
+              inVault: false
+            },
+            isEquipped: inventoryType === 'characterEquipment'
+          }))
       );
     }
   }
@@ -31,15 +33,17 @@ export default function assembleShells({ profile, state, membershipType }) {
     socketData
   });
 
-  const vaultItems = getItemsFromBucket({
-    bucket: profile.profileInventory.data.items,
-    bucketHash: 138197802,
-    location: {
-      membershipType,
-      inVault: true
-    },
-    isEquipped: false
-  });
+  const vaultItems = profile.profileInventory.data.items
+    .filter(item => item.bucketHash === 138197802)
+    .map(item => ({
+      itemHash: item.itemHash,
+      itemInstanceId: item.itemInstanceId,
+      location: {
+        membershipType,
+        inVault: true
+      },
+      isEquipped: false
+    }));
 
   const vaultGhostShells = getGhostShellsFromItems({
     items: vaultItems,
@@ -48,22 +52,6 @@ export default function assembleShells({ profile, state, membershipType }) {
   });
 
   return ghostShells.concat(vaultGhostShells);
-}
-
-function getItemsFromBucket({ bucket, bucketHash, location, isEquipped }) {
-  const array = [];
-  for (let itemIndex = 0; itemIndex < bucket.length; itemIndex++) {
-    const item = bucket[itemIndex];
-    if (item.bucketHash === bucketHash) {
-      array.push({
-        itemHash: item.itemHash,
-        itemInstanceId: item.itemInstanceId,
-        location,
-        isEquipped
-      });
-    }
-  }
-  return array;
 }
 
 function getGhostShellsFromItems({ items, inventory, socketData }) {
